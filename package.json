@@ -3,18 +3,22 @@
 	"description": "Bare-bones React app setup",
 	"scripts": {
 		"build": "webpack --env NODE_ENV=production --env production --config ./lib/webpack-prod.js",
-		"dev": "nodemon --exec \"webpack --env NODE_ENV=development --config ./lib/webpack-dev.js\" -e js,jsx,html,styl",
-		"start": "serv dist"
+		"dev": "nodemon --exec \"webpack --env NODE_ENV=development --config ./lib/webpack-dev.js\" -i dist -e js,jsx,html,styl",
+		"start": "serve dist -l 8080"
 	},
 	"devDependencies": {
 		"css-loader": "^5.2.1",
 		"esbuild-loader": "^2.11.0",
 		"file-loader": "^6.2.0",
 		"html-webpack-plugin": "^5.2.0",
+		"mini-css-extract-plugin": "^1.4.1",
+		"modern-normalize": "^1.0.0",
 		"nodemon": "^2.0.7",
 		"react": "^17.0.1",
 		"react-dom": "^17.0.1",
-		"serv": "^0.2.4",
+		"seacreature": "^2.9.0",
+		"serve": "^11.3.2",
+		"style-loader": "^2.0.0",
 		"stylus": "^0.54.8",
 		"stylus-loader": "^5.0.0",
 		"typescript": "^4.2.2",
