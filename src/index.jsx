@@ -1,18 +1,23 @@
 import inject from 'seacreature/lib/inject'
+import { useContext } from 'react'
 
-inject('pod', ({ hub, StateProvider, HubProvider }) => {
-  const providers = [
-    HubProvider,
-    StateProvider
-  ]
+inject('pod', ({ StateContext, HubContext }) => {
+  const App = () => {
+    const state = useContext(StateContext)
+    const hub = useContext(HubContext)
 
-  const Display = inject.one('display')
+    const increment = e => {
+      e.preventDefault()
+      hub.emit('increment')
+    }
 
-  const App = () =>
-    providers.reverse().reduce((children, Provider) =>
-      <Provider children={children} />,
-      <Display />
+    return (
+      <div>
+        {state.time}: The answer is {state.number}.
+        <button onClick={increment}>+</button>
+      </div>
     )
+  }
 
   inject('app', App)
 })
