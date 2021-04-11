@@ -36,8 +36,7 @@ inject('ctx', ({ HubContext }) => {
       return () => {
         clearInterval(handle)
       }
-    }), [state])
-    // [state] is important: subscribe to changes in state
+    }), [])
 
     return <StateContext.Provider
       value={state} children={children} />
