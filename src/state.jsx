@@ -20,17 +20,17 @@ inject('ctx', ({ HubContext }) => {
 
     useEffect(hub.effect(hub => {
       hub.on('increment', () => {
-        setState({
+        setState(state => ({
           ...state,
           number: state.number + 1
-        })
+        }))
       })
 
       const handle = setInterval(() => {
-        setState({
+        setState(state => ({
           ...state,
           time: new Date().valueOf()
-        })
+        }))
       }, 1000)
 
       return () => {

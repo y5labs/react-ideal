@@ -11,11 +11,9 @@ inject('pod', ({ StateContext, HubContext }) => {
       hub.emit('increment')
     }
 
-    return (
-      <div>
-        {state.time}: The answer is {state.number}.
-        <button onClick={increment}>+</button>
-      </div>
-    )
+    return <>
+      {state.time}: The answer is {state.number}.
+      <button onClick={increment}>+</button>
+    </>
   }])
 })
