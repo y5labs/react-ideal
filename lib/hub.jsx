@@ -6,12 +6,10 @@ inject('ctx', () => {
   const hub = Hub()
   const HubContext = createContext()
 
-  const HubProvider = props => {
-    const { children } = props
-    const child_hub = props.hub ? props.hub : hub
-    return <HubContext.Provider
-      value={child_hub} children={children} />
-  }
+  const HubProvider = props =>
+    <HubContext.Provider
+      value={props.hub ? props.hub : hub}
+      children={props.children} />
 
   inject('provider', HubProvider)
 
