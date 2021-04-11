@@ -50,6 +50,7 @@ inject('ctx', ({ HubContext }) => {
           })
           if (callednext) return
           setState(() => result)
+          hub.emit('navigate', context, result)
         })
       })
 

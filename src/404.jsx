@@ -1,7 +1,7 @@
 import inject from 'seacreature/lib/inject'
 
 inject('pod', () => {
-  inject('route', ['/orders', p => () => {
+  inject('404', () => {
     return <div>Orders Page</div>
-  }])
+  })
 })
