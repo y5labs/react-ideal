@@ -31,8 +31,7 @@ inject('ctx', ({ HubContext }) => {
         window.scrollTo(0, 0)
       })
 
-      inject.many('route').forEach(r =>
-        route(r[0], r[1]))
+      inject.many('route').forEach(r => route(...r))
 
       route.routes().forEach(route => {
         page(route.pattern, (e, next) => {
