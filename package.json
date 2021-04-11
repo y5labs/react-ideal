@@ -4,7 +4,7 @@
 	"scripts": {
 		"build": "webpack --env NODE_ENV=production --env production --config ./lib/webpack-prod.js",
 		"dev": "nodemon --exec \"webpack --env NODE_ENV=development --config ./lib/webpack-dev.js\" -i dist -e js,jsx,html,styl",
-		"start": "serve dist -l 8080"
+		"start": "serve dist -s -l 8080"
 	},
 	"devDependencies": {
 		"css-loader": "^5.2.1",
