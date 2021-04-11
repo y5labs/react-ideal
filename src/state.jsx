@@ -20,7 +20,6 @@ inject('ctx', ({ HubContext }) => {
 
     useEffect(hub.effect(hub => {
       hub.on('increment', () => {
-        console.log('asdasd')
         setState({
           ...state,
           number: state.number + 1

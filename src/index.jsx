@@ -1,10 +1,11 @@
 import inject from 'seacreature/lib/inject'
 import { useContext } from 'react'
 
-inject('pod', ({ StateContext, HubContext }) => {
+inject('pod', ({ RouterContext, StateContext, HubContext }) => {
   const App = () => {
     const state = useContext(StateContext)
     const hub = useContext(HubContext)
+    const Route = useContext(RouterContext)
 
     const increment = e => {
       e.preventDefault()
@@ -13,8 +14,13 @@ inject('pod', ({ StateContext, HubContext }) => {
 
     return (
       <div>
-        {state.time}: The answer is {state.number}.
-        <button onClick={increment}>+</button>
+        <nav>
+          <div><a href="/">Home</a></div>
+          <div><a href="/orders">Orders</a></div>
+        </nav>
+        <div>
+          {Route ? <Route /> : null}
+        </div>
       </div>
     )
   }

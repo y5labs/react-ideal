@@ -8,7 +8,6 @@ inject('pod', async () => {
       .reverse()
       .reduce((children, Provider) =>
         <Provider children={children} />,
-        <App />
-      )
+        <App />)
   render(<Root />, document.getElementById('root'))
 })
