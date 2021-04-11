@@ -2,7 +2,7 @@ import inject from 'seacreature/lib/inject'
 import { useContext } from 'react'
 
 inject('pod', ({ RouterContext }) => {
-  const App = () => {
+  inject('app', () => {
     const Route = useContext(RouterContext)
     const NotFound = inject.one('404')
 
@@ -12,12 +12,10 @@ inject('pod', ({ RouterContext }) => {
           <div><a href="/">Home</a></div>
           <div><a href="/orders">Orders</a></div>
         </nav>
-        <div>
+        <article>
           {Route ? <Route /> : <NotFound />}
-        </div>
+        </article>
       </div>
     )
-  }
-
-  inject('app', App)
+  })
 })
