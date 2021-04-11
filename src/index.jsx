@@ -1,27 +1,18 @@
 import inject from 'seacreature/lib/inject'
-import { createContext, useContext, useEffect, useState } from 'react'
 
-inject('pod', ({ hub, StateContext, StateProvider }) => {
-  const Display = () => {
-    const state = useContext(StateContext)
-    // Use the Consumer to grab the value from context
-    // Notice this component didn't get any props!
-    return (
-      <div>The answer is {state.number}. <button onClick={ state.increment }>+</button></div>
-    )
-  }
+inject('pod', ({ hub, StateProvider, HubProvider }) => {
+  const providers = [
+    HubProvider,
+    StateProvider
+  ]
 
-  const App = () => {
-    // Use the Provider to make a value available to all
-    // children and grandchildren
-    return (
-      <StateProvider>
-        <div>
-          <Display />
-        </div>
-      </StateProvider>
+  const Display = inject.one('display')
+
+  const App = () =>
+    providers.reverse().reduce((children, Provider) =>
+      <Provider children={children} />,
+      <Display />
     )
-  }
 
   inject('app', App)
 })
