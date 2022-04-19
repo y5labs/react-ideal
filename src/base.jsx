@@ -6,14 +6,10 @@ inject('pod', ({ RouterContext }) => {
     const Route = useContext(RouterContext)
     const NotFound = inject.one('404')
 
-    return <>
-      <nav>
-        <div><a href="/">Home</a></div>
-        <div><a href="/orders">Orders</a></div>
-      </nav>
-      <article>
-        {Route ? <Route /> : <NotFound />}
-      </article>
-    </>
+    return (
+      <>
+        <article>{Route ? <Route /> : <NotFound />}</article>
+      </>
+    )
   })
 })
