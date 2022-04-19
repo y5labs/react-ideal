@@ -9,7 +9,7 @@ inject('pod', ({ StateContext, HubContext }) => {
       const SyncedScrolls = () => {
         const [scrollOffset, setScrollOffset] = React.useState(0)
 
-        const updateScrollOffset = val => setScrollOffset(val)
+        const updateScrollOffset = val => setScrollOffset(() => val)
 
         const mainData = {
           // Main Data
@@ -21,14 +21,15 @@ inject('pod', ({ StateContext, HubContext }) => {
 
         const mainProps = {
           updateScrollOffset,
+          overflow: { x: 'auto', y: 'auto' },
           mainData,
           width: '500px'
         }
 
         const sidebarProps = {
-          scrollable: false,
+          overflow: { x: 'hidden', y: 'hidden' },
           scrollOffset,
-          sidebarData,
+          sidebarData
         }
 
         return (
@@ -81,7 +82,9 @@ inject('pod', ({ StateContext, HubContext }) => {
                 display: 'inline-block',
                 height: `500px`,
                 width: props.width || 'auto',
-                overflow: 'auto'
+                // overflow: 'auto',
+                overflowX: props.overflow.x ? props.overflow.x : 'auto',
+                overflowY: props.overflow.y ? props.overflow.y : 'auto'
               }}
             >
               <div
@@ -93,32 +96,30 @@ inject('pod', ({ StateContext, HubContext }) => {
               >
                 {rowVirtualizer.virtualItems.map(virtualRow => (
                   <React.Fragment key={virtualRow.index}>
-                    {columnVirtualizer.virtualItems.map(
-                      virtualColumn => (
-                        <div
-                          key={virtualColumn.index}
-                          className={
-                            virtualColumn.index % 2
-                              ? virtualRow.index % 2 === 0
-                                ? 'ListItemOdd'
-                                : 'ListItemEven'
-                              : virtualRow.index % 2
+                    {columnVirtualizer.virtualItems.map(virtualColumn => (
+                      <div
+                        key={virtualColumn.index}
+                        className={
+                          virtualColumn.index % 2
+                            ? virtualRow.index % 2 === 0
                               ? 'ListItemOdd'
                               : 'ListItemEven'
-                          }
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: `${virtualColumn.size}px`,
-                            height: `${virtualRow.size}px`,
-                            transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
-                          }}
-                        >
-                          Cell {virtualRow.index}, {virtualColumn.index}
-                        </div>
-                      )
-                    )}
+                            : virtualRow.index % 2
+                            ? 'ListItemOdd'
+                            : 'ListItemEven'
+                        }
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: `${virtualColumn.size}px`,
+                          height: `${virtualRow.size}px`,
+                          transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
+                        }}
+                      >
+                        Cell {virtualRow.index}, {virtualColumn.index}
+                      </div>
+                    ))}
                   </React.Fragment>
                 ))}
               </div>
