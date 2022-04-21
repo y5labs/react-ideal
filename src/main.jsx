@@ -3,6 +3,8 @@ import React from 'react'
 import { useVirtual } from 'react-virtual'
 import { DateTime } from 'luxon'
 
+const range = (start, end) => Array(end - start + 1).fill().map((_, idx) => start + idx)
+
 inject('pod', ({ StateContext, HubContext }) => {
   inject('route', [
     '/',
@@ -20,7 +22,25 @@ inject('pod', ({ StateContext, HubContext }) => {
           { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
           { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
           { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
-          { name: 'F', start_at: '2022-04-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
         ]
 
         const time_dims = [
@@ -29,14 +49,12 @@ inject('pod', ({ StateContext, HubContext }) => {
         ]
 
         const start_at = DateTime.fromISO(time_dims[0]).startOf('month')
-        const time_axis_size = DateTime.fromISO(time_dims[1]).startOf('month').diff(start_at, ['months'])
-
+        const time_axis_size = DateTime.fromISO(time_dims[1]).startOf('month').diff(start_at, ['months']).as('months') + 1
         const offset_to_time = n => {
           const d = start_at.plus({ months: n })
-          return d.toFormat('MMMM yy')
+          return d.toFormat('MMM yy')
         }
 
-        
 
 
         const task_dims = [0, data.length - 1]
@@ -94,8 +112,16 @@ inject('pod', ({ StateContext, HubContext }) => {
           >
             <TimelimeAxis
               scrollOffsetLeft={scrollOffsetLeft}
-              data={columnHeadingData}
-              size={columnHeadingData[0].length}
+              size={time_axis_size}
+              render={(virtualItems, render_row) => {
+                const dims = [+Infinity, -Infinity]
+                for (const i of virtualItems) {
+                  dims[0] = Math.min(dims[0], i.index)
+                  dims[1] = Math.max(dims[1], i.index)
+                }
+                const headings = range(dims[0], dims[1]).map(offset_to_time)
+                return virtualItems.map(i => render_row(i, headings[i.index]))
+              }}
               />
             <TaskAxis
               scrollOffsetTop={scrollOffsetTop}
@@ -114,8 +140,7 @@ inject('pod', ({ StateContext, HubContext }) => {
           horizontal: true,
           size: props.size,
           parentRef,
-          estimateSize: React.useCallback(() => 120, []),
-          overscan: 5
+          estimateSize: React.useCallback(() => 120, [])
         })
 
         return (
@@ -136,29 +161,26 @@ inject('pod', ({ StateContext, HubContext }) => {
                   position: 'relative'
                 }}
               >
-                <React.Fragment >
-                  {columnVirtualizer.virtualItems.map(virtualColumn => {
-                    const cellData = props.data[0][virtualColumn.index]
-                    return (
-                      <div
-                        key={virtualColumn.index}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: `${virtualColumn.size}px`,
-                          height: `60px`,
-                          transform: `translateX(${virtualColumn.start}px) translateY(0px)`
-                        }}
-                      >
-                        {cellData}
-                      </div>
-                    )
-                  })}
-                </React.Fragment>
+                {props.render(columnVirtualizer.virtualItems, (i, s) => {
+                  return (
+                    <div
+                      key={i.index}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: `${i.size}px`,
+                        height: `60px`,
+                        transform: `translateX(${i.start}px) translateY(0px)`
+                      }}
+                    >
+                      {s}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </>
