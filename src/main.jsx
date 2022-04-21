@@ -50,18 +50,18 @@ inject('pod', ({ StateContext, HubContext }) => {
           const d = start_at.plus({ months: n })
           return d.toFormat('MMM yy')
         }
-
-        console.log(offset_to_time(0))
-        console.log(offset_to_time(1))
-        console.log(offset_to_time(2))
-        console.log(offset_to_time(3))
-        console.log(offset_to_time(4))
-        console.log(offset_to_time(5))
+        const time_window = dims =>
+          range(dims[0], dims[1]).map(offset_to_time)
 
         const task_dims = [0, data.length - 1]
         const task_axis_size = task_dims[1] - task_dims[0] + 1
         const offset_to_task = n => data[n].name
+        const task_window = dims =>
+          range(dims[0], dims[1]).map(offset_to_task)
 
+        const schedule_window = (row_dims, col_dims) => {
+          return range(row_dims[0], row_dims[1]).map(r => range(col_dims[0], col_dims[1]))
+        }
 
 
         const tableData = [
@@ -92,7 +92,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                   dims[0] = Math.min(dims[0], i.index)
                   dims[1] = Math.max(dims[1], i.index)
                 }
-                const items = range(dims[0], dims[1]).map(offset_to_time)
+                const items = time_window(dims)
                 return virtualItems.map(i => render(i, items[i.index - dims[0]]))
               }}
               />
@@ -106,7 +106,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                   dims[0] = Math.min(dims[0], i.index)
                   dims[1] = Math.max(dims[1], i.index)
                 }
-                const items = range(dims[0], dims[1]).map(offset_to_task)
+                const items = task_window(dims)
                 return virtualItems.map(i => render(i, items[i.index - dims[0]]))
               }}
               />
@@ -127,29 +127,14 @@ inject('pod', ({ StateContext, HubContext }) => {
                   col_dims[0] = Math.min(col_dims[0], i.index)
                   col_dims[1] = Math.max(col_dims[1], i.index)
                 }
+                const items = schedule_window(row_dims, col_dims)
+
                 // console.log(virtualRows, virtualColumns, row_dims, col_dims)
 
-                return virtualRows.map(virtualRow =>
-                  virtualColumns.map(virtualColumn => {
-                    const cellData = tableData?.[virtualRow.index]?.[virtualColumn.index]
-                    return (
-                      <div
-                        key={`${virtualRow.index}/${virtualColumn.index}`}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: `${virtualColumn.size}px`,
-                          height: `${virtualRow.size}px`,
-                          transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
-                        }}
-                      >
-                        {cellData?.task}
-                      </div>
-                    )
+                return virtualRows.map(r =>
+                  virtualColumns.map(c => {
+                    const item = items[r.index - row_dims[0]][c.index - col_dims[0]]
+                    return render(r, c, item)
                   })
                 )
               }}
@@ -325,9 +310,24 @@ inject('pod', ({ StateContext, HubContext }) => {
                   position: 'relative'
                 }}
               >
-                {props.render(rowVirtualizer.virtualItems, columnVirtualizer.virtualItems, (virtualRow, virtualColumn, render) => {
-
-                })}
+                {props.render(rowVirtualizer.virtualItems, columnVirtualizer.virtualItems, (r, c, s) =>
+                  <div
+                    key={`${r.index}/${c.index}`}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: `${c.size}px`,
+                      height: `${r.size}px`,
+                      transform: `translateX(${c.start}px) translateY(${r.start}px)`
+                    }}
+                  >
+                    {s}
+                  </div>
+                )}
               </div>
             </div>
           </>
