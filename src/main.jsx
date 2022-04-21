@@ -51,6 +51,13 @@ inject('pod', ({ StateContext, HubContext }) => {
           return d.toFormat('MMM yy')
         }
 
+        console.log(offset_to_time(0))
+        console.log(offset_to_time(1))
+        console.log(offset_to_time(2))
+        console.log(offset_to_time(3))
+        console.log(offset_to_time(4))
+        console.log(offset_to_time(5))
+
         const task_dims = [0, data.length - 1]
         const task_axis_size = task_dims[1] - task_dims[0] + 1
         const offset_to_task = n => data[n].name
@@ -86,7 +93,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                   dims[1] = Math.max(dims[1], i.index)
                 }
                 const items = range(dims[0], dims[1]).map(offset_to_time)
-                return virtualItems.map(i => render(i, items[i.index]))
+                return virtualItems.map(i => render(i, items[i.index - dims[0]]))
               }}
               />
             <TaskAxis
@@ -100,7 +107,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                   dims[1] = Math.max(dims[1], i.index)
                 }
                 const items = range(dims[0], dims[1]).map(offset_to_task)
-                return virtualItems.map(i => render(i, items[i.index]))
+                return virtualItems.map(i => render(i, items[i.index - dims[0]]))
               }}
               />
             <Schedule
@@ -120,7 +127,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                   col_dims[0] = Math.min(col_dims[0], i.index)
                   col_dims[1] = Math.max(col_dims[1], i.index)
                 }
-                console.log(virtualRows, virtualColumns, row_dims, col_dims)
+                // console.log(virtualRows, virtualColumns, row_dims, col_dims)
 
                 return virtualRows.map(virtualRow =>
                   virtualColumns.map(virtualColumn => {
@@ -183,26 +190,23 @@ inject('pod', ({ StateContext, HubContext }) => {
                   position: 'relative'
                 }}
               >
-                {props.render(columnVirtualizer.virtualItems, (i, s) => {
-                  return (
-                    <div
-                      key={i.index}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: `${i.size}px`,
-                        height: `60px`,
-                        transform: `translateX(${i.start}px) translateY(0px)`
-                      }}
-                    >
-                      {s}
-                    </div>
-                  )
-                })}
+                {props.render(columnVirtualizer.virtualItems, (i, s) =>
+                  <div
+                    key={i.index}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: `${i.size}px`,
+                      height: `60px`,
+                      transform: `translateX(${i.start}px) translateY(0px)`
+                    }}>
+                    {s}
+                  </div>
+                )}
               </div>
             </div>
           </>
@@ -241,25 +245,24 @@ inject('pod', ({ StateContext, HubContext }) => {
                   position: 'relative'
                 }}
               >
-                {rowVirtualizer.virtualItems.map(virtualRow => (
-                  <React.Fragment key={virtualRow.index}>
-                    <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: `120px`,
-                        height: `${virtualRow.size}px`,
-                        transform: `translateX(${0}px) translateY(${virtualRow.start}px)`
-                      }}
-                    >
-                      {props.data[virtualRow.index].name}
-                    </div>
-                  </React.Fragment>
-                ))}
+                {props.render(rowVirtualizer.virtualItems, (i, s) =>
+                  <div
+                    key={i.index}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: `120px`,
+                      height: `${i.size}px`,
+                      transform: `translateX(${0}px) translateY(${i.start}px)`
+                    }}
+                  >
+                    {s}
+                  </div>
+                )}
               </div>
             </div>
           </>
