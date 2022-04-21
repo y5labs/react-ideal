@@ -55,6 +55,8 @@ inject('pod', ({ StateContext, HubContext }) => {
         const task_axis_size = task_dims[1] - task_dims[0] + 1
         const offset_to_task = n => data[n].name
 
+
+
         const tableData = [
           [{ task: 'a', month: "Jan '22", start: 15, days: 30 }],
           [{ task: 'b', month: "Jan '22", start: 10, days: 20 }],
@@ -105,6 +107,39 @@ inject('pod', ({ StateContext, HubContext }) => {
               setScrollOffsetTop={setScrollOffsetTop}
               setScrollOffsetLeft={setScrollOffsetLeft}
               data={tableData}
+              render={(virtualRows, virtualColumns, render) => {
+                // const dims = [+Infinity, -Infinity]
+                // for (const i of virtualRows, virtualColumns) {
+                //   dims[0] = Math.min(dims[0], i.index)
+                //   dims[1] = Math.max(dims[1], i.index)
+                // }
+                // const items = range(dims[0], dims[1]).map(offset_to_time)
+                // // return virtualRows, virtualColumns.map(i => render(i, items[i.index]))
+
+                return virtualRows.map(virtualRow =>
+                  virtualColumns.map(virtualColumn => {
+                    const cellData = tableData[virtualRow.index][virtualColumn.index]
+                    return (
+                      <div
+                        key={`${virtualRow.index}/${virtualColumn.index}`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: `${virtualColumn.size}px`,
+                          height: `${virtualRow.size}px`,
+                          transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
+                        }}
+                      >
+                        {cellData.task}
+                      </div>
+                    )
+                  })
+                )
+              }}
             />
           </div>
         )
@@ -281,31 +316,9 @@ inject('pod', ({ StateContext, HubContext }) => {
                   position: 'relative'
                 }}
               >
-                {rowVirtualizer.virtualItems.map(virtualRow => (
-                  <React.Fragment key={virtualRow.index}>
-                    {columnVirtualizer.virtualItems.map(virtualColumn => {
-                      const cellData = props.data[virtualRow.index][virtualColumn.index]
-                      return (
-                        <div
-                          key={virtualColumn.index}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: `${virtualColumn.size}px`,
-                            height: `${virtualRow.size}px`,
-                            transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
-                          }}
-                        >
-                          {cellData.task}
-                        </div>
-                      )
-                    })}
-                  </React.Fragment>
-                ))}
+                {props.render(rowVirtualizer.virtualItems, columnVirtualizer.virtualItems, (virtualRow, virtualColumn, render) => {
+
+                })}
               </div>
             </div>
           </>
