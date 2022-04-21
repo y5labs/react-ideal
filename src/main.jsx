@@ -38,6 +38,54 @@ inject('pod', ({ StateContext, HubContext }) => {
           { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
           { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
           { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2024-04-20' },
         ]
 
         const time_dims = [
@@ -60,7 +108,39 @@ inject('pod', ({ StateContext, HubContext }) => {
           range(dims[0], dims[1]).map(offset_to_task)
 
         const schedule_window = (row_dims, col_dims) => {
-          return range(row_dims[0], row_dims[1]).map(r => range(col_dims[0], col_dims[1]))
+          const time_dims = [
+            start_at.plus({ months: col_dims[0] }).toFormat('yyyy-MM-dd'),
+            start_at.plus({ months: col_dims[1] + 1 }).toFormat('yyyy-MM-dd')
+          ]
+
+          const items = range(row_dims[0], row_dims[1]).map(r => range(col_dims[0], col_dims[1]).map(i => ({})))
+
+          const filtered_tasks = data
+            .slice(row_dims[0], row_dims[1])
+            .map((t, i) => ({ t, i }))
+            .filter(({ t }) => t.end_at >= time_dims[0] && t.start_at < time_dims[1])
+          for (const {t, i} of filtered_tasks) {
+              const task_dims = [
+                DateTime.fromISO(t.start_at).startOf('month').diff(start_at, ['months']).as('months'),
+                DateTime.fromISO(t.end_at).startOf('month').diff(start_at, ['months']).as('months')
+              ]
+              if (task_dims[0] == task_dims[1])
+                items[i][task_dims[0] - col_dims[0]] = { type: 'startandend', t }
+              else {
+                const start_n = task_dims[0] - col_dims[0]
+                const end_n = task_dims[1] - col_dims[0]
+                items[i][start_n] = { type: 'start', t }
+                items[i][end_n] = { type: 'end', t }
+                if (end_n - start_n > 1) {
+                  for (const n of range(start_n + 1, end_n - 1))
+                    items[i][n] = { type: 'middle', t }
+                }
+              }
+            }
+
+
+
+          return items
         }
 
 
@@ -261,7 +341,6 @@ inject('pod', ({ StateContext, HubContext }) => {
           size: props.row_size,
           parentRef,
           estimateSize: React.useCallback(() => 60, []),
-          overscan: 5,
           scrollOffsetFn(event) {
             const top = event?.target.scrollTop
             if (top >= 0) {
@@ -279,7 +358,6 @@ inject('pod', ({ StateContext, HubContext }) => {
           size: props.col_size,
           parentRef,
           estimateSize: React.useCallback(() => 120, []),
-          overscan: 5,
           scrollOffsetFn(event) {
             const left = event?.target.scrollLeft
             if (left >= 0) {
@@ -325,7 +403,16 @@ inject('pod', ({ StateContext, HubContext }) => {
                       transform: `translateX(${c.start}px) translateY(${r.start}px)`
                     }}
                   >
-                    {s}
+                    {
+                    s.type == 'startandend'
+                    ? 'startandend'
+                    : s.type == 'start'
+                    ? 'start'
+                    : s.type == 'end'
+                    ? 'end'
+                    : s.type == 'middle'
+                    ? 'middle'
+                    : ''}
                   </div>
                 )}
               </div>
