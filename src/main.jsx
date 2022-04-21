@@ -107,18 +107,24 @@ inject('pod', ({ StateContext, HubContext }) => {
               setScrollOffsetTop={setScrollOffsetTop}
               setScrollOffsetLeft={setScrollOffsetLeft}
               data={tableData}
+              row_size={task_axis_size}
+              col_size={time_axis_size}
               render={(virtualRows, virtualColumns, render) => {
-                // const dims = [+Infinity, -Infinity]
-                // for (const i of virtualRows, virtualColumns) {
-                //   dims[0] = Math.min(dims[0], i.index)
-                //   dims[1] = Math.max(dims[1], i.index)
-                // }
-                // const items = range(dims[0], dims[1]).map(offset_to_time)
-                // // return virtualRows, virtualColumns.map(i => render(i, items[i.index]))
+                const row_dims = [+Infinity, -Infinity]
+                for (const i of virtualRows) {
+                  row_dims[0] = Math.min(row_dims[0], i.index)
+                  row_dims[1] = Math.max(row_dims[1], i.index)
+                }
+                const col_dims = [+Infinity, -Infinity]
+                for (const i of virtualColumns) {
+                  col_dims[0] = Math.min(col_dims[0], i.index)
+                  col_dims[1] = Math.max(col_dims[1], i.index)
+                }
+                console.log(virtualRows, virtualColumns, row_dims, col_dims)
 
                 return virtualRows.map(virtualRow =>
                   virtualColumns.map(virtualColumn => {
-                    const cellData = tableData[virtualRow.index][virtualColumn.index]
+                    const cellData = tableData?.[virtualRow.index]?.[virtualColumn.index]
                     return (
                       <div
                         key={`${virtualRow.index}/${virtualColumn.index}`}
@@ -134,7 +140,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                           transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
                         }}
                       >
-                        {cellData.task}
+                        {cellData?.task}
                       </div>
                     )
                   })
@@ -264,7 +270,7 @@ inject('pod', ({ StateContext, HubContext }) => {
         const parentRef = React.useRef(false)
 
         const rowVirtualizer = useVirtual({
-          size: props.data.length,
+          size: props.row_size,
           parentRef,
           estimateSize: React.useCallback(() => 60, []),
           overscan: 5,
@@ -282,7 +288,7 @@ inject('pod', ({ StateContext, HubContext }) => {
 
         const columnVirtualizer = useVirtual({
           horizontal: true,
-          size: props.data[0].length,
+          size: props.col_size,
           parentRef,
           estimateSize: React.useCallback(() => 120, []),
           overscan: 5,
