@@ -65,28 +65,26 @@ inject('pod', ({ StateContext, HubContext }) => {
             <TimelimeAxis
               scrollOffsetLeft={scrollOffsetLeft}
               data={columnHeadingData}
+              size={columnHeadingData[0].length}
               />
             <TaskAxis
               scrollOffsetTop={scrollOffsetTop}
               data={rowHeadingData}
+              size={rowHeadingData.length}
               />
             <GridVirtualizerFixed {...tableOptions} />
           </div>
         )
       }
 
-      const TimelimeAxis = props2 => {
+      const TimelimeAxis = props => {
         const parentRef = React.useRef(false)
-        const props = Object.assign({}, props2, {
-          rowSize: 60,
-          columnSize: 120
-        })
 
         const columnVirtualizer = useVirtual({
           horizontal: true,
-          size: props.data[0].length,
+          size: props.size,
           parentRef,
-          estimateSize: React.useCallback(() => props.columnSize, []),
+          estimateSize: React.useCallback(() => 120, []),
           overscan: 5
         })
 
@@ -137,28 +135,14 @@ inject('pod', ({ StateContext, HubContext }) => {
         )
       }
 
-      const TaskAxis = props2 => {
-        const props = Object.assign({}, props2, {
-          rowSize: 60,
-          columnSize: 120
-        })
+      const TaskAxis = props => {
         const parentRef = React.useRef(false)
 
         const rowVirtualizer = useVirtual({
-          size: props.data.length,
+          size: props.size,
           parentRef,
-          estimateSize: React.useCallback(() => props.rowSize, []),
-          overscan: 5,
-          scrollOffsetFn(event) {
-            const top = event?.target.scrollTop
-            if (top >= 0) {
-              props.updateScrollOffsetTop && props.updateScrollOffsetTop(top)
-              return top
-            } else {
-              props.updateScrollOffsetTop && props.updateScrollOffsetTop(0)
-              return 0
-            }
-          }
+          estimateSize: React.useCallback(() => 60, []),
+          overscan: 5
         })
 
         return (
