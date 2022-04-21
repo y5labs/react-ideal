@@ -51,30 +51,6 @@ inject('pod', ({ StateContext, HubContext }) => {
           columnSize: 120
         }
 
-        const rowHeadingOptions = {
-          styles: {
-            background: 'MediumSeaGreen',
-            overflow: 'hidden',
-            gridArea: '2 / 1 / 3 / 2'
-          },
-          scrollOffsetTop,
-          data: rowHeadingData,
-          rowSize: 60,
-          columnSize: 120
-        }
-
-        const columnHeadingOptions = {
-          styles: {
-            background: 'silver',
-            overflow: 'hidden',
-            gridArea: '1 / 2 / 2 / 3'
-          },
-          scrollOffsetLeft,
-          data: columnHeadingData,
-          rowSize: 60,
-          columnSize: 120
-        }
-
         return (
           <div
             style={{
@@ -86,10 +62,214 @@ inject('pod', ({ StateContext, HubContext }) => {
               height: '100%'
             }}
           >
-            <GridVirtualizerFixed {...columnHeadingOptions} />
-            <GridVirtualizerFixed {...rowHeadingOptions} />
+            <TimelimeAxis
+              scrollOffsetLeft={scrollOffsetLeft}
+              data={columnHeadingData}
+              />
+            <TaskAxis
+              scrollOffsetTop={scrollOffsetTop}
+              data={rowHeadingData}
+              />
             <GridVirtualizerFixed {...tableOptions} />
           </div>
+        )
+      }
+
+      const TimelimeAxis = props2 => {
+        const parentRef = React.useRef(false)
+        const props = Object.assign({}, props2, {
+          styles: {
+            background: 'silver',
+            overflow: 'hidden',
+            gridArea: '1 / 2 / 2 / 3'
+          },
+          rowSize: 60,
+          columnSize: 120
+        })
+
+        React.useEffect(() => {
+          if ('scrollOffsetTop' in props) rowVirtualizer.scrollToOffset(props.scrollOffsetTop)
+          if ('scrollOffsetLeft' in props) columnVirtualizer.scrollToOffset(props.scrollOffsetLeft)
+        }, [props.scrollOffsetTop, props.scrollOffsetLeft])
+
+        const rowVirtualizer = useVirtual({
+          size: props.data.length,
+          parentRef,
+          estimateSize: React.useCallback(() => props.rowSize, []),
+          overscan: 5,
+          scrollOffsetFn(event) {
+            const top = event?.target.scrollTop
+            if (top >= 0) {
+              props.updateScrollOffsetTop && props.updateScrollOffsetTop(top)
+              return top
+            } else {
+              props.updateScrollOffsetTop && props.updateScrollOffsetTop(0)
+              return 0
+            }
+          }
+        })
+
+        const columnVirtualizer = useVirtual({
+          horizontal: true,
+          size: props.data[0].length,
+          parentRef,
+          estimateSize: React.useCallback(() => props.columnSize, []),
+          overscan: 5,
+          scrollOffsetFn(event) {
+            const left = event?.target.scrollLeft
+            if (left >= 0) {
+              props.updateScrollOffsetLeft && props.updateScrollOffsetLeft(left)
+              return left
+            } else {
+              props.updateScrollOffsetLeft && props.updateScrollOffsetLeft(0)
+              return 0
+            }
+          }
+        })
+
+        return (
+          <>
+            <div
+              ref={parentRef}
+              className='List'
+              style={{
+                ...props.styles
+              }}
+            >
+              <div
+                style={{
+                  height: `${rowVirtualizer.totalSize}px`,
+                  width: `${columnVirtualizer.totalSize}px`,
+                  position: 'relative'
+                }}
+              >
+                {rowVirtualizer.virtualItems.map(virtualRow => (
+                  <React.Fragment key={virtualRow.index}>
+                    {columnVirtualizer.virtualItems.map(virtualColumn => {
+                      const cellData = props.data[virtualRow.index][virtualColumn.index]
+                      return (
+                        <div
+                          key={virtualColumn.index}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: `${virtualColumn.size}px`,
+                            height: `${virtualRow.size}px`,
+                            transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
+                          }}
+                        >
+                          {cellData}
+                        </div>
+                      )
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </>
+        )
+      }
+
+      const TaskAxis = props2 => {
+        const props = Object.assign({}, props2, {
+          styles: {
+            background: 'MediumSeaGreen',
+            overflow: 'hidden',
+            gridArea: '2 / 1 / 3 / 2'
+          },
+          rowSize: 60,
+          columnSize: 120
+        })
+        const parentRef = React.useRef(false)
+
+        React.useEffect(() => {
+          if ('scrollOffsetTop' in props) rowVirtualizer.scrollToOffset(props.scrollOffsetTop)
+          if ('scrollOffsetLeft' in props) columnVirtualizer.scrollToOffset(props.scrollOffsetLeft)
+        }, [props.scrollOffsetTop, props.scrollOffsetLeft])
+
+        const rowVirtualizer = useVirtual({
+          size: props.data.length,
+          parentRef,
+          estimateSize: React.useCallback(() => props.rowSize, []),
+          overscan: 5,
+          scrollOffsetFn(event) {
+            const top = event?.target.scrollTop
+            if (top >= 0) {
+              props.updateScrollOffsetTop && props.updateScrollOffsetTop(top)
+              return top
+            } else {
+              props.updateScrollOffsetTop && props.updateScrollOffsetTop(0)
+              return 0
+            }
+          }
+        })
+
+        const columnVirtualizer = useVirtual({
+          horizontal: true,
+          size: props.data[0].length,
+          parentRef,
+          estimateSize: React.useCallback(() => props.columnSize, []),
+          overscan: 5,
+          scrollOffsetFn(event) {
+            const left = event?.target.scrollLeft
+            if (left >= 0) {
+              props.updateScrollOffsetLeft && props.updateScrollOffsetLeft(left)
+              return left
+            } else {
+              props.updateScrollOffsetLeft && props.updateScrollOffsetLeft(0)
+              return 0
+            }
+          }
+        })
+
+        return (
+          <>
+            <div
+              ref={parentRef}
+              className='List'
+              style={{
+                ...props.styles
+              }}
+            >
+              <div
+                style={{
+                  height: `${rowVirtualizer.totalSize}px`,
+                  width: `${columnVirtualizer.totalSize}px`,
+                  position: 'relative'
+                }}
+              >
+                {rowVirtualizer.virtualItems.map(virtualRow => (
+                  <React.Fragment key={virtualRow.index}>
+                    {columnVirtualizer.virtualItems.map(virtualColumn => {
+                      const cellData = props.data[virtualRow.index][virtualColumn.index]
+                      return (
+                        <div
+                          key={virtualColumn.index}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: `${virtualColumn.size}px`,
+                            height: `${virtualRow.size}px`,
+                            transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
+                          }}
+                        >
+                          {cellData}
+                        </div>
+                      )
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </>
         )
       }
 
@@ -156,28 +336,6 @@ inject('pod', ({ StateContext, HubContext }) => {
                   <React.Fragment key={virtualRow.index}>
                     {columnVirtualizer.virtualItems.map(virtualColumn => {
                       const cellData = props.data[virtualRow.index][virtualColumn.index]
-                      // Plain text cell data
-                      if (typeof cellData === 'string')
-                        return (
-                          <div
-                            key={virtualColumn.index}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: `${virtualColumn.size}px`,
-                              height: `${virtualRow.size}px`,
-                              transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
-                            }}
-                          >
-                            {cellData}
-                          </div>
-                        )
-
-                      // Custom cell data
                       return (
                         <div
                           key={virtualColumn.index}
