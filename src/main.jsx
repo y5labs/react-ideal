@@ -47,7 +47,6 @@ inject('pod', ({ StateContext, HubContext }) => {
           data.reduce((acc, { start_at }) =>  acc < start_at ? acc : start_at, null),
           data.reduce((acc, { end_at }) =>  acc > end_at ? acc : end_at, null)
         ]
-
         const start_at = DateTime.fromISO(time_dims[0]).startOf('month')
         const time_axis_size = DateTime.fromISO(time_dims[1]).startOf('month').diff(start_at, ['months']).as('months') + 1
         const offset_to_time = n => {
@@ -55,11 +54,9 @@ inject('pod', ({ StateContext, HubContext }) => {
           return d.toFormat('MMM yy')
         }
 
-
-
         const task_dims = [0, data.length - 1]
-
-
+        const task_axis_size = task_dims[1] - task_dims[0] + 1
+        const offset_to_task = n => data[n].name
 
         const tableData = [
           [{ task: 'a', month: "Jan '22", start: 15, days: 30 }],
@@ -67,23 +64,6 @@ inject('pod', ({ StateContext, HubContext }) => {
           [{ task: 'c', month: "Mar '22", start: 25, days: 40 }],
           [{ task: 'd', month: "Feb '22", start: 5, days: 10 }],
           [{ task: 'e', month: "Feb '22", start: 30, days: 15 }]
-        ]
-        const rowHeadingData = [['Task A'], ['Task B'], ['Task C'], ['Task D'], ['Task E']]
-        const columnHeadingData = [
-          [
-            "Jan '22",
-            "Feb '22",
-            "Mar '22",
-            "Apr '22",
-            "May '22",
-            "Jun '22",
-            "Jul '22",
-            "Aug '22",
-            "Sep '22",
-            "Oct '22",
-            "Nov '22",
-            "Dev '22"
-          ]
         ]
 
         const tableOptions = {
@@ -113,22 +93,31 @@ inject('pod', ({ StateContext, HubContext }) => {
             <TimelimeAxis
               scrollOffsetLeft={scrollOffsetLeft}
               size={time_axis_size}
-              render={(virtualItems, render_row) => {
+              render={(virtualItems, render) => {
                 const dims = [+Infinity, -Infinity]
                 for (const i of virtualItems) {
                   dims[0] = Math.min(dims[0], i.index)
                   dims[1] = Math.max(dims[1], i.index)
                 }
-                const headings = range(dims[0], dims[1]).map(offset_to_time)
-                return virtualItems.map(i => render_row(i, headings[i.index]))
+                const items = range(dims[0], dims[1]).map(offset_to_time)
+                return virtualItems.map(i => render(i, items[i.index]))
               }}
               />
             <TaskAxis
               scrollOffsetTop={scrollOffsetTop}
-              data={rowHeadingData}
-              size={rowHeadingData.length}
+              data={data}
+              size={task_axis_size}
+              render={(virtualItems, render) => {
+                const dims = [+Infinity, -Infinity]
+                for (const i of virtualItems) {
+                  dims[0] = Math.min(dims[0], i.index)
+                  dims[1] = Math.max(dims[1], i.index)
+                }
+                const items = range(dims[0], dims[1]).map(offset_to_task)
+                return virtualItems.map(i => render(i, items[i.index]))
+              }}
               />
-            <GridVirtualizerFixed {...tableOptions} />
+            <Schedule {...tableOptions} />
           </div>
         )
       }
@@ -142,6 +131,10 @@ inject('pod', ({ StateContext, HubContext }) => {
           parentRef,
           estimateSize: React.useCallback(() => 120, [])
         })
+
+        React.useEffect(() => {
+          if ('scrollOffsetLeft' in props) columnVirtualizer.scrollToOffset(props.scrollOffsetLeft)
+        }, [props.scrollOffsetLeft])
 
         return (
           <>
@@ -197,6 +190,10 @@ inject('pod', ({ StateContext, HubContext }) => {
           overscan: 5
         })
 
+        React.useEffect(() => {
+          if ('scrollOffsetTop' in props) rowVirtualizer.scrollToOffset(props.scrollOffsetTop)
+        }, [props.scrollOffsetTop])
+
         return (
           <>
             <div
@@ -230,7 +227,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                         transform: `translateX(${0}px) translateY(${virtualRow.start}px)`
                       }}
                     >
-                      {props.data[virtualRow.index][0]}
+                      {props.data[virtualRow.index].name}
                     </div>
                   </React.Fragment>
                 ))}
@@ -240,13 +237,8 @@ inject('pod', ({ StateContext, HubContext }) => {
         )
       }
 
-      const GridVirtualizerFixed = props => {
+      const Schedule = props => {
         const parentRef = React.useRef(false)
-
-        React.useEffect(() => {
-          if ('scrollOffsetTop' in props) rowVirtualizer.scrollToOffset(props.scrollOffsetTop)
-          if ('scrollOffsetLeft' in props) columnVirtualizer.scrollToOffset(props.scrollOffsetLeft)
-        }, [props.scrollOffsetTop, props.scrollOffsetLeft])
 
         const rowVirtualizer = useVirtual({
           size: props.data.length,
