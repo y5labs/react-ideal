@@ -13,9 +13,6 @@ inject('pod', ({ StateContext, HubContext }) => {
         const [scrollOffsetTop, setScrollOffsetTop] = React.useState(0)
         const [scrollOffsetLeft, setScrollOffsetLeft] = React.useState(0)
 
-        const updateScrollOffsetTop = val => setScrollOffsetTop(val)
-        const updateScrollOffsetLeft = val => setScrollOffsetLeft(val)
-
         const data = [
           { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
           { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
@@ -66,19 +63,6 @@ inject('pod', ({ StateContext, HubContext }) => {
           [{ task: 'e', month: "Feb '22", start: 30, days: 15 }]
         ]
 
-        const tableOptions = {
-          styles: {
-            background: 'LightGray',
-            overflow: 'auto',
-            gridArea: '2 / 2 / 3 / 3'
-          },
-          updateScrollOffsetTop,
-          updateScrollOffsetLeft,
-          data: tableData,
-          rowSize: 60,
-          columnSize: 120
-        }
-
         return (
           <div
             style={{
@@ -117,7 +101,11 @@ inject('pod', ({ StateContext, HubContext }) => {
                 return virtualItems.map(i => render(i, items[i.index]))
               }}
               />
-            <Schedule {...tableOptions} />
+            <Schedule
+              setScrollOffsetTop={setScrollOffsetTop}
+              setScrollOffsetLeft={setScrollOffsetLeft}
+              data={tableData}
+            />
           </div>
         )
       }
@@ -243,15 +231,15 @@ inject('pod', ({ StateContext, HubContext }) => {
         const rowVirtualizer = useVirtual({
           size: props.data.length,
           parentRef,
-          estimateSize: React.useCallback(() => props.rowSize, []),
+          estimateSize: React.useCallback(() => 60, []),
           overscan: 5,
           scrollOffsetFn(event) {
             const top = event?.target.scrollTop
             if (top >= 0) {
-              props.updateScrollOffsetTop && props.updateScrollOffsetTop(top)
+              props.setScrollOffsetTop && props.setScrollOffsetTop(top)
               return top
             } else {
-              props.updateScrollOffsetTop && props.updateScrollOffsetTop(0)
+              props.setScrollOffsetTop && props.setScrollOffsetTop(0)
               return 0
             }
           }
@@ -261,15 +249,15 @@ inject('pod', ({ StateContext, HubContext }) => {
           horizontal: true,
           size: props.data[0].length,
           parentRef,
-          estimateSize: React.useCallback(() => props.columnSize, []),
+          estimateSize: React.useCallback(() => 120, []),
           overscan: 5,
           scrollOffsetFn(event) {
             const left = event?.target.scrollLeft
             if (left >= 0) {
-              props.updateScrollOffsetLeft && props.updateScrollOffsetLeft(left)
+              props.setScrollOffsetLeft && props.setScrollOffsetLeft(left)
               return left
             } else {
-              props.updateScrollOffsetLeft && props.updateScrollOffsetLeft(0)
+              props.setScrollOffsetLeft && props.setScrollOffsetLeft(0)
               return 0
             }
           }
@@ -281,7 +269,9 @@ inject('pod', ({ StateContext, HubContext }) => {
               ref={parentRef}
               className='List'
               style={{
-                ...props.styles
+                background: 'LightGray',
+                overflow: 'auto',
+                gridArea: '2 / 2 / 3 / 3'
               }}
             >
               <div
