@@ -1,6 +1,7 @@
 @import url("../node_modules/modern-normalize/modern-normalize.css");
 
 $primary ?= #364A57
+$secondary ?= #939CA3
 
 article
   height 100%
@@ -19,6 +20,7 @@ article
   grid-row-end 1
   grid-column-end 1
   border-bottom 1px solid $primary
+  border-right 1px dashed rgba($secondary, 0.2)
   display inline-flex
   align-items center
   padding 0 10px
@@ -31,6 +33,7 @@ article
   grid-column-start 1
   grid-row-end 3
   grid-column-end 2
+  width 240px
 
   &::-webkit-scrollbar
     display none
@@ -42,6 +45,8 @@ article
     position absolute
     top 0
     left 0
+    width 240px
+    border-right 1px dashed rgba($secondary, 0.2)
 
 .timeline-axis
   overflow hidden
@@ -49,14 +54,19 @@ article
   grid-column-start 2
   grid-row-end 2
   grid-column-end 3
+  height 32px
+
   & > div > div
     display inline-flex
     align-items center
-    justify-content center
+    padding 0 10px
     position absolute
     top 0
     left 0
     border-bottom 1px solid $primary
+    // border-bottom 1px dashed rgba($secondary, 0.2)
+    border-left 1px solid rgba($secondary, 0.4)
+    height 32px
 
 .schedule-grid
   overflow auto
@@ -68,9 +78,11 @@ article
     position absolute
     top 0
     left 0
+    border-left 1px solid rgba($secondary, 0.2)
+    // border-bottom 1px dashed rgba($secondary, 0.2)
   .s, .e, .m
     border-color $primary
-    margin-top 8px
+    margin-top 7px
     height 12px
     border-top 1px solid $primary
     border-bottom 2px solid $primary
