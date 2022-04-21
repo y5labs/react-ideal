@@ -1,6 +1,7 @@
 import inject from 'seacreature/lib/inject'
 import React from 'react'
 import { useVirtual } from 'react-virtual'
+import { DateTime } from 'luxon'
 
 inject('pod', ({ StateContext, HubContext }) => {
   inject('route', [
@@ -12,6 +13,35 @@ inject('pod', ({ StateContext, HubContext }) => {
 
         const updateScrollOffsetTop = val => setScrollOffsetTop(val)
         const updateScrollOffsetLeft = val => setScrollOffsetLeft(val)
+
+        const data = [
+          { name: 'A', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'B', start_at: '2022-01-15', end_at: '2022-01-20' },
+          { name: 'C', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'D', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'E', start_at: '2022-03-15', end_at: '2022-04-20' },
+          { name: 'F', start_at: '2022-04-15', end_at: '2022-04-20' },
+        ]
+
+        const time_dims = [
+          data.reduce((acc, { start_at }) =>  acc < start_at ? acc : start_at, null),
+          data.reduce((acc, { end_at }) =>  acc > end_at ? acc : end_at, null)
+        ]
+
+        const start_at = DateTime.fromISO(time_dims[0]).startOf('month')
+        const time_axis_size = DateTime.fromISO(time_dims[1]).startOf('month').diff(start_at, ['months'])
+
+        const offset_to_time = n => {
+          const d = start_at.plus({ months: n })
+          return d.toFormat('MMMM yy')
+        }
+
+        
+
+
+        const task_dims = [0, data.length - 1]
+
+
 
         const tableData = [
           [{ task: 'a', month: "Jan '22", start: 15, days: 30 }],
