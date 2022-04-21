@@ -4,7 +4,7 @@ import { useVirtual } from 'react-virtual'
 import { DateTime } from 'luxon'
 
 const col_width = 120
-const row_height = 32
+const row_height = 26
 
 const range = (start, end) => Array(end - start + 1).fill().map((_, idx) => start + idx)
 // TODO: leap year improvement?
@@ -163,7 +163,11 @@ inject('pod', ({ StateContext, HubContext }) => {
         }
 
         return <div className='wrapper'>
+          <div className='task-title'>
+            Tasks
+          </div>
           <TimelimeAxis
+            setScrollOffsetLeft={setScrollOffsetLeft}
             scrollOffsetLeft={scrollOffsetLeft}
             size={time_axis_size}
             render={(virtualItems, render) => {
@@ -195,6 +199,7 @@ inject('pod', ({ StateContext, HubContext }) => {
             setScrollOffsetTop={setScrollOffsetTop}
             scrollOffsetTop={scrollOffsetTop}
             setScrollOffsetLeft={setScrollOffsetLeft}
+            scrollOffsetLeft={scrollOffsetLeft}
             row_size={task_axis_size}
             col_size={time_axis_size}
             render={(virtualRows, virtualColumns, render) => {
@@ -228,7 +233,12 @@ inject('pod', ({ StateContext, HubContext }) => {
           horizontal: true,
           size: props.size,
           parentRef,
-          estimateSize: React.useCallback(() => col_width, [])
+          estimateSize: React.useCallback(() => col_width, []),
+          scrollOffsetFn(e) {
+            const left = e?.target.scrollLeft ?? 0
+            props.setScrollOffsetLeft && props.setScrollOffsetLeft(left)
+            return left
+          }
         })
 
         React.useEffect(() => {
@@ -249,7 +259,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                 style={{
                   width: `${i.size}px`,
                   height: `${row_height}px`,
-                  transform: `translateX(${i.start}px) translateY(0px)`
+                  transform: `translateX(${i.start}px)`
                 }}>
                 {s}
               </div>
@@ -266,14 +276,9 @@ inject('pod', ({ StateContext, HubContext }) => {
           parentRef,
           estimateSize: React.useCallback(() => row_height, []),
           scrollOffsetFn(e) {
-            const top = e?.target.scrollTop
-            if (top >= 0) {
-              props.setScrollOffsetTop && props.setScrollOffsetTop(top)
-              return top
-            } else {
-              props.setScrollOffsetTop && props.setScrollOffsetTop(0)
-              return 0
-            }
+            const top = e?.target.scrollTop ?? 0
+            props.setScrollOffsetTop && props.setScrollOffsetTop(top)
+            return top
           }
         })
 
@@ -297,7 +302,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                     style={{
                       width: `${col_width}px`,
                       height: `${i.size}px`,
-                      transform: `translateX(${0}px) translateY(${i.start}px)`
+                      transform: `translateY(${i.start}px)`
                     }}>
                     {s}
                   </div>
@@ -316,14 +321,21 @@ inject('pod', ({ StateContext, HubContext }) => {
           parentRef,
           estimateSize: React.useCallback(() => row_height, []),
           scrollOffsetFn(e) {
-            const top = e?.target.scrollTop
-            if (top >= 0) {
-              props.setScrollOffsetTop && props.setScrollOffsetTop(top)
-              return top
-            } else {
-              props.setScrollOffsetTop && props.setScrollOffsetTop(0)
-              return 0
-            }
+            const top = e?.target.scrollTop ?? 0
+            props.setScrollOffsetTop && props.setScrollOffsetTop(top)
+            return top
+          }
+        })
+
+        const col_v = useVirtual({
+          horizontal: true,
+          size: props.col_size,
+          parentRef,
+          estimateSize: React.useCallback(() => col_width, []),
+          scrollOffsetFn(e) {
+            const left = e?.target.scrollLeft ?? 0
+            props.setScrollOffsetLeft && props.setScrollOffsetLeft(left)
+            return left
           }
         })
 
@@ -331,22 +343,9 @@ inject('pod', ({ StateContext, HubContext }) => {
           if ('scrollOffsetTop' in props) row_v.scrollToOffset(props.scrollOffsetTop)
         }, [props.scrollOffsetTop])
 
-        const col_v = useVirtual({
-          horizontal: true,
-          size: props.col_size,
-          parentRef,
-          estimateSize: React.useCallback(() => col_width, []),
-          scrollOffsetFn(event) {
-            const left = event?.target.scrollLeft
-            if (left >= 0) {
-              props.setScrollOffsetLeft && props.setScrollOffsetLeft(left)
-              return left
-            } else {
-              props.setScrollOffsetLeft && props.setScrollOffsetLeft(0)
-              return 0
-            }
-          }
-        })
+        React.useEffect(() => {
+          if ('scrollOffsetLeft' in props) col_v.scrollToOffset(props.scrollOffsetLeft)
+        }, [props.scrollOffsetLeft])
 
         return <div ref={parentRef} className='schedule-grid'>
           <div
@@ -367,43 +366,19 @@ inject('pod', ({ StateContext, HubContext }) => {
               >
                 {
                 s.type == 'startandend'
-                ?
-                <div
+                ? <div
                   className='s e'
-                  style={{
-                    width: `${s.end - s.start}px`,
-                    height: '20px',
-                    marginLeft: `${s.start}px`
-                  }}>
+                  style={{ width: `${s.end - s.start}px`, marginLeft: `${s.start}px` }}>
                 </div>
                 : s.type == 'start'
-                ?
-                  <div
-                    className='s'
-                    style={{
-                      width: `${col_width - s.start}px`,
-                      height: '20px',
-                      marginLeft: `${s.start}px`
-                    }}>
-                  </div>
+                ? <div
+                  className='s'
+                  style={{ width: `${col_width - s.start}px`, marginLeft: `${s.start}px` }}>
+                </div>
                 : s.type == 'end'
-                ?
-                <div
-                  className='e'
-                  style={{
-                    width: `${s.end}px`,
-                    height: '20px'
-                  }}>
-                </div>
+                ? <div className='e' style={{ width: `${s.end}px`}}></div>
                 : s.type == 'middle'
-                ?
-                <div
-                  className='m'
-                  style={{
-                    width: `${col_width}px`,
-                    height: '20px'
-                  }}>
-                </div>
+                ? <div className='m' style={{ width: `${col_width}px` }}></div>
                 : ''}
               </div>
             )}

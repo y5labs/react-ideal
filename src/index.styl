@@ -1,5 +1,7 @@
 @import url("../node_modules/modern-normalize/modern-normalize.css");
 
+$primary ?= #364A57
+
 article
   height 100%
 
@@ -11,10 +13,19 @@ article
   grid-row-gap 0px
   height 100%
 
+.task-title
+  grid-row-start 1
+  grid-column-start 1
+  grid-row-end 1
+  grid-column-end 1
+  border-bottom 1px solid $primary
+  display inline-flex
+  align-items center
+  padding 0 10px
+
 .task-axis
   -ms-overflow-style none
   scrollbar-width none
-  background MediumSeaGreen
   overflow auto
   grid-row-start 2
   grid-column-start 1
@@ -33,7 +44,6 @@ article
     left 0
 
 .timeline-axis
-  background silver
   overflow hidden
   grid-row-start 1
   grid-column-start 2
@@ -46,9 +56,9 @@ article
     position absolute
     top 0
     left 0
+    border-bottom 1px solid $primary
 
 .schedule-grid
-  background LightGray
   overflow auto
   grid-row-start 2
   grid-column-start 2
@@ -59,11 +69,17 @@ article
     top 0
     left 0
   .s, .e, .m
-    background-color black
-    margin-top 6px
+    border-color $primary
+    margin-top 8px
+    height 12px
+    border-top 1px solid $primary
+    border-bottom 2px solid $primary
+    margin-bottom -1px
   .s
-    border-top-left-radius 20px
-    border-bottom-left-radius 20px
+    border-top-left-radius 4px
+    border-bottom-left-radius 4px
+    border-left 1px solid $primary
   .e
-    border-top-right-radius 20px
-    border-bottom-right-radius 20px
+    border-top-right-radius 4px
+    border-bottom-right-radius 4px
+    border-right 1px solid $primary
