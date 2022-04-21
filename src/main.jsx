@@ -53,7 +53,7 @@ inject('pod', ({ StateContext, HubContext }) => {
 
         const rowHeadingOptions = {
           styles: {
-            background: 'GoldenRod',
+            background: 'MediumSeaGreen',
             overflow: 'hidden',
             gridArea: '2 / 1 / 3 / 2'
           },
@@ -65,7 +65,7 @@ inject('pod', ({ StateContext, HubContext }) => {
 
         const columnHeadingOptions = {
           styles: {
-            background: 'MediumSeaGreen',
+            background: 'silver',
             overflow: 'hidden',
             gridArea: '1 / 2 / 2 / 3'
           },
@@ -156,9 +156,8 @@ inject('pod', ({ StateContext, HubContext }) => {
                   <React.Fragment key={virtualRow.index}>
                     {columnVirtualizer.virtualItems.map(virtualColumn => {
                       const cellData = props.data[virtualRow.index][virtualColumn.index]
-                      console.log(cellData)
                       // Plain text cell data
-                      if (Object.keys(cellData).length === 0)
+                      if (typeof cellData === 'string')
                         return (
                           <div
                             key={virtualColumn.index}
@@ -179,22 +178,24 @@ inject('pod', ({ StateContext, HubContext }) => {
                         )
 
                       // Custom cell data
-                      return (<div
-                            key={virtualColumn.index}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: `${virtualColumn.size}px`,
-                              height: `${virtualRow.size}px`,
-                              transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
-                            }}
-                          >
-
-                          </div>)
+                      return (
+                        <div
+                          key={virtualColumn.index}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: `${virtualColumn.size}px`,
+                            height: `${virtualRow.size}px`,
+                            transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
+                          }}
+                        >
+                          {cellData.task}
+                        </div>
+                      )
                     })}
                   </React.Fragment>
                 ))}
