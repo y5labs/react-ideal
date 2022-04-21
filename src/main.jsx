@@ -4,6 +4,14 @@ import { useVirtual } from 'react-virtual'
 import { DateTime } from 'luxon'
 
 const range = (start, end) => Array(end - start + 1).fill().map((_, idx) => start + idx)
+// TODO: leap year improvement?
+const month_days = range(0, 11).map(n => {
+  const start_at = DateTime.fromISO('2020-01-01').plus({ months: n })
+  const end_at = start_at.plus({ months: 1})
+  return end_at.diff(start_at, 'days').as('days')
+})
+const percent_start = d => (d.day - 1) / month_days[d.month - 1]
+const percent_end = d => d.day / month_days[d.month - 1]
 
 inject('pod', ({ StateContext, HubContext }) => {
   inject('route', [
@@ -120,9 +128,13 @@ inject('pod', ({ StateContext, HubContext }) => {
             .map((t, i) => ({ t, i }))
             .filter(({ t }) => t.end_at >= time_dims[0] && t.start_at < time_dims[1])
           for (const {t, i} of filtered_tasks) {
+              const task_dates = [
+                DateTime.fromISO(t.start_at),
+                DateTime.fromISO(t.end_at)
+              ]
               const task_dims = [
-                DateTime.fromISO(t.start_at).startOf('month').diff(start_at, ['months']).as('months'),
-                DateTime.fromISO(t.end_at).startOf('month').diff(start_at, ['months']).as('months')
+                task_dates[0].startOf('month').diff(start_at, ['months']).as('months'),
+                task_dates[1].startOf('month').diff(start_at, ['months']).as('months')
               ]
               if (task_dims[0] == task_dims[1])
                 items[i][task_dims[0] - col_dims[0]] = { type: 'startandend', t }
@@ -142,15 +154,6 @@ inject('pod', ({ StateContext, HubContext }) => {
 
           return items
         }
-
-
-        const tableData = [
-          [{ task: 'a', month: "Jan '22", start: 15, days: 30 }],
-          [{ task: 'b', month: "Jan '22", start: 10, days: 20 }],
-          [{ task: 'c', month: "Mar '22", start: 25, days: 40 }],
-          [{ task: 'd', month: "Feb '22", start: 5, days: 10 }],
-          [{ task: 'e', month: "Feb '22", start: 30, days: 15 }]
-        ]
 
         return (
           <div
@@ -193,7 +196,6 @@ inject('pod', ({ StateContext, HubContext }) => {
             <Schedule
               setScrollOffsetTop={setScrollOffsetTop}
               setScrollOffsetLeft={setScrollOffsetLeft}
-              data={tableData}
               row_size={task_axis_size}
               col_size={time_axis_size}
               render={(virtualRows, virtualColumns, render) => {
