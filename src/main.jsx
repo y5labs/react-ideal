@@ -3,6 +3,8 @@ import React from 'react'
 import { useVirtual } from 'react-virtual'
 import { DateTime } from 'luxon'
 
+const col_width = 120
+
 const range = (start, end) => Array(end - start + 1).fill().map((_, idx) => start + idx)
 // TODO: leap year improvement?
 const month_days = range(0, 11).map(n => {
@@ -10,8 +12,8 @@ const month_days = range(0, 11).map(n => {
   const end_at = start_at.plus({ months: 1})
   return end_at.diff(start_at, 'days').as('days')
 })
-const percent_start = d => (d.day - 1) / month_days[d.month - 1]
-const percent_end = d => d.day / month_days[d.month - 1]
+const offset_start = d => (d.day - 1) / month_days[d.month - 1] * col_width
+const offset_end = d => d.day / month_days[d.month - 1] * col_width
 
 inject('pod', ({ StateContext, HubContext }) => {
   inject('route', [
@@ -136,13 +138,19 @@ inject('pod', ({ StateContext, HubContext }) => {
                 task_dates[0].startOf('month').diff(start_at, ['months']).as('months'),
                 task_dates[1].startOf('month').diff(start_at, ['months']).as('months')
               ]
+
               if (task_dims[0] == task_dims[1])
-                items[i][task_dims[0] - col_dims[0]] = { type: 'startandend', t }
+                items[i][task_dims[0] - col_dims[0]] = {
+                  type: 'startandend',
+                  t,
+                  start: offset_start(task_dates[0]),
+                  end: offset_end(task_dates[1])
+                }
               else {
                 const start_n = task_dims[0] - col_dims[0]
                 const end_n = task_dims[1] - col_dims[0]
-                items[i][start_n] = { type: 'start', t }
-                items[i][end_n] = { type: 'end', t }
+                items[i][start_n] = { type: 'start', t, start: offset_start(task_dates[0])}
+                items[i][end_n] = { type: 'end', t, end: offset_end(task_dates[1]) }
                 if (end_n - start_n > 1) {
                   for (const n of range(start_n + 1, end_n - 1))
                     items[i][n] = { type: 'middle', t }
@@ -232,7 +240,7 @@ inject('pod', ({ StateContext, HubContext }) => {
           horizontal: true,
           size: props.size,
           parentRef,
-          estimateSize: React.useCallback(() => 120, [])
+          estimateSize: React.useCallback(() => col_width, [])
         })
 
         React.useEffect(() => {
@@ -308,7 +316,7 @@ inject('pod', ({ StateContext, HubContext }) => {
               <div
                 style={{
                   height: `${rowVirtualizer.totalSize}px`,
-                  width: `120px`,
+                  width: `${col_width}px`,
                   position: 'relative'
                 }}
               >
@@ -322,7 +330,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                       position: 'absolute',
                       top: 0,
                       left: 0,
-                      width: `120px`,
+                      width: `${col_width}px`,
                       height: `${i.size}px`,
                       transform: `translateX(${0}px) translateY(${i.start}px)`
                     }}
@@ -359,7 +367,7 @@ inject('pod', ({ StateContext, HubContext }) => {
           horizontal: true,
           size: props.col_size,
           parentRef,
-          estimateSize: React.useCallback(() => 120, []),
+          estimateSize: React.useCallback(() => col_width, []),
           scrollOffsetFn(event) {
             const left = event?.target.scrollLeft
             if (left >= 0) {
@@ -394,9 +402,6 @@ inject('pod', ({ StateContext, HubContext }) => {
                   <div
                     key={`${r.index}/${c.index}`}
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
                       position: 'absolute',
                       top: 0,
                       left: 0,
@@ -407,13 +412,46 @@ inject('pod', ({ StateContext, HubContext }) => {
                   >
                     {
                     s.type == 'startandend'
-                    ? 'startandend'
+                    ?
+                    <div
+                      style={{
+                        backgroundColor: 'black',
+                        width: `${s.end - s.start}px`,
+                        height: '20px',
+                        marginLeft: `${s.start}px`,
+                        borderRadius: '20px'
+                      }}>
+                    </div>
                     : s.type == 'start'
-                    ? 'start'
+                    ?
+                      <div
+                        style={{
+                          backgroundColor: 'black',
+                          width: `${col_width - s.start}px`,
+                          height: '20px',
+                          marginLeft: `${s.start}px`,
+                          borderRadius: '20px 0 0 20px'
+                        }}>
+                      </div>
                     : s.type == 'end'
-                    ? 'end'
+                    ?
+                    <div
+                      style={{
+                        backgroundColor: 'black',
+                        width: `${s.end}px`,
+                        height: '20px',
+                        borderRadius: '0 20px 20px 0'
+                      }}>
+                    </div>
                     : s.type == 'middle'
-                    ? 'middle'
+                    ?
+                    <div
+                      style={{
+                        backgroundColor: 'black',
+                        width: `${col_width}px`,
+                        height: '20px'
+                      }}>
+                    </div>
                     : ''}
                   </div>
                 )}
