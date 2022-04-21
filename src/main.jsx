@@ -4,6 +4,7 @@ import { useVirtual } from 'react-virtual'
 import { DateTime } from 'luxon'
 
 const col_width = 120
+const row_height = 32
 
 const range = (start, end) => Array(end - start + 1).fill().map((_, idx) => start + idx)
 // TODO: leap year improvement?
@@ -161,78 +162,69 @@ inject('pod', ({ StateContext, HubContext }) => {
           return items
         }
 
-        return (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'auto 1fr',
-              gridTemplateRows: 'auto 1fr',
-              gridColumnGap: '0px',
-              gridRowGap: '0px',
-              height: '100%'
+        return <div className='wrapper'>
+          <TimelimeAxis
+            scrollOffsetLeft={scrollOffsetLeft}
+            size={time_axis_size}
+            render={(virtualItems, render) => {
+              const dims = [+Infinity, -Infinity]
+              for (const i of virtualItems) {
+                dims[0] = Math.min(dims[0], i.index)
+                dims[1] = Math.max(dims[1], i.index)
+              }
+              const items = time_window(dims)
+              return virtualItems.map(i => render(i, items[i.index - dims[0]]))
             }}
-          >
-            <TimelimeAxis
-              scrollOffsetLeft={scrollOffsetLeft}
-              size={time_axis_size}
-              render={(virtualItems, render) => {
-                const dims = [+Infinity, -Infinity]
-                for (const i of virtualItems) {
-                  dims[0] = Math.min(dims[0], i.index)
-                  dims[1] = Math.max(dims[1], i.index)
-                }
-                const items = time_window(dims)
-                return virtualItems.map(i => render(i, items[i.index - dims[0]]))
-              }}
-              />
-            <TaskAxis
-              scrollOffsetTop={scrollOffsetTop}
-              data={data}
-              size={task_axis_size}
-              render={(virtualItems, render) => {
-                const dims = [+Infinity, -Infinity]
-                for (const i of virtualItems) {
-                  dims[0] = Math.min(dims[0], i.index)
-                  dims[1] = Math.max(dims[1], i.index)
-                }
-                const items = task_window(dims)
-                return virtualItems.map(i => render(i, items[i.index - dims[0]]))
-              }}
-              />
-            <Schedule
-              setScrollOffsetTop={setScrollOffsetTop}
-              setScrollOffsetLeft={setScrollOffsetLeft}
-              row_size={task_axis_size}
-              col_size={time_axis_size}
-              render={(virtualRows, virtualColumns, render) => {
-                const row_dims = [+Infinity, -Infinity]
-                for (const i of virtualRows) {
-                  row_dims[0] = Math.min(row_dims[0], i.index)
-                  row_dims[1] = Math.max(row_dims[1], i.index)
-                }
-                const col_dims = [+Infinity, -Infinity]
-                for (const i of virtualColumns) {
-                  col_dims[0] = Math.min(col_dims[0], i.index)
-                  col_dims[1] = Math.max(col_dims[1], i.index)
-                }
-                const items = schedule_window(row_dims, col_dims)
-
-                return virtualRows.map(r =>
-                  virtualColumns.map(c => {
-                    const item = items[r.index - row_dims[0]][c.index - col_dims[0]]
-                    return render(r, c, item)
-                  })
-                )
-              }}
             />
-          </div>
-        )
+          <TaskAxis
+            setScrollOffsetTop={setScrollOffsetTop}
+            scrollOffsetTop={scrollOffsetTop}
+            data={data}
+            size={task_axis_size}
+            render={(virtualItems, render) => {
+              const dims = [+Infinity, -Infinity]
+              for (const i of virtualItems) {
+                dims[0] = Math.min(dims[0], i.index)
+                dims[1] = Math.max(dims[1], i.index)
+              }
+              const items = task_window(dims)
+              return virtualItems.map(i => render(i, items[i.index - dims[0]]))
+            }}
+            />
+          <Schedule
+            setScrollOffsetTop={setScrollOffsetTop}
+            scrollOffsetTop={scrollOffsetTop}
+            setScrollOffsetLeft={setScrollOffsetLeft}
+            row_size={task_axis_size}
+            col_size={time_axis_size}
+            render={(virtualRows, virtualColumns, render) => {
+              const row_dims = [+Infinity, -Infinity]
+              for (const i of virtualRows) {
+                row_dims[0] = Math.min(row_dims[0], i.index)
+                row_dims[1] = Math.max(row_dims[1], i.index)
+              }
+              const col_dims = [+Infinity, -Infinity]
+              for (const i of virtualColumns) {
+                col_dims[0] = Math.min(col_dims[0], i.index)
+                col_dims[1] = Math.max(col_dims[1], i.index)
+              }
+              const items = schedule_window(row_dims, col_dims)
+
+              return virtualRows.map(r =>
+                virtualColumns.map(c => {
+                  const item = items[r.index - row_dims[0]][c.index - col_dims[0]]
+                  return render(r, c, item)
+                })
+              )
+            }}
+          />
+        </div>
       }
 
       const TimelimeAxis = props => {
         const parentRef = React.useRef(false)
 
-        const columnVirtualizer = useVirtual({
+        const col_v = useVirtual({
           horizontal: true,
           size: props.size,
           parentRef,
@@ -240,97 +232,73 @@ inject('pod', ({ StateContext, HubContext }) => {
         })
 
         React.useEffect(() => {
-          if ('scrollOffsetLeft' in props) columnVirtualizer.scrollToOffset(props.scrollOffsetLeft)
+          if ('scrollOffsetLeft' in props) col_v.scrollToOffset(props.scrollOffsetLeft)
         }, [props.scrollOffsetLeft])
 
-        return (
-          <>
-            <div
-              ref={parentRef}
-              className='List'
-              style={{
-                background: 'silver',
-                overflow: 'hidden',
-                gridArea: '1 / 2 / 2 / 3'
-              }}
-            >
+        return <div ref={parentRef} className='timeline-axis'>
+          <div
+            style={{
+              height: `${row_height}px`,
+              width: `${col_v.totalSize}px`,
+              position: 'relative'
+            }}
+          >
+            {props.render(col_v.virtualItems, (i, s) =>
               <div
+                key={i.index}
                 style={{
-                  height: `60px`,
-                  width: `${columnVirtualizer.totalSize}px`,
-                  position: 'relative'
-                }}
-              >
-                {props.render(columnVirtualizer.virtualItems, (i, s) =>
-                  <div
-                    key={i.index}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: `${i.size}px`,
-                      height: `60px`,
-                      transform: `translateX(${i.start}px) translateY(0px)`
-                    }}>
-                    {s}
-                  </div>
-                )}
+                  width: `${i.size}px`,
+                  height: `${row_height}px`,
+                  transform: `translateX(${i.start}px) translateY(0px)`
+                }}>
+                {s}
               </div>
-            </div>
-          </>
-        )
+            )}
+          </div>
+        </div>
       }
 
       const TaskAxis = props => {
         const parentRef = React.useRef(false)
 
-        const rowVirtualizer = useVirtual({
+        const row_v = useVirtual({
           size: props.size,
           parentRef,
-          estimateSize: React.useCallback(() => 60, []),
-          overscan: 5
+          estimateSize: React.useCallback(() => row_height, []),
+          scrollOffsetFn(e) {
+            const top = e?.target.scrollTop
+            if (top >= 0) {
+              props.setScrollOffsetTop && props.setScrollOffsetTop(top)
+              return top
+            } else {
+              props.setScrollOffsetTop && props.setScrollOffsetTop(0)
+              return 0
+            }
+          }
         })
 
         React.useEffect(() => {
-          if ('scrollOffsetTop' in props) rowVirtualizer.scrollToOffset(props.scrollOffsetTop)
+          if ('scrollOffsetTop' in props) row_v.scrollToOffset(props.scrollOffsetTop)
         }, [props.scrollOffsetTop])
 
         return (
           <>
-            <div
-              ref={parentRef}
-              className='List'
-              style={{
-                background: 'MediumSeaGreen',
-                overflow: 'hidden',
-                gridArea: '2 / 1 / 3 / 2'
-              }}
-            >
+            <div ref={parentRef} className='task-axis'>
               <div
                 style={{
-                  height: `${rowVirtualizer.totalSize}px`,
+                  height: `${row_v.totalSize}px`,
                   width: `${col_width}px`,
                   position: 'relative'
                 }}
               >
-                {props.render(rowVirtualizer.virtualItems, (i, s) =>
+                {props.render(row_v.virtualItems, (i, s) =>
                   <div
                     key={i.index}
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
                       width: `${col_width}px`,
                       height: `${i.size}px`,
                       transform: `translateX(${0}px) translateY(${i.start}px)`
-                    }}
-                  >
+                    }}>
                     {s}
                   </div>
                 )}
@@ -343,12 +311,12 @@ inject('pod', ({ StateContext, HubContext }) => {
       const Schedule = props => {
         const parentRef = React.useRef(false)
 
-        const rowVirtualizer = useVirtual({
+        const row_v = useVirtual({
           size: props.row_size,
           parentRef,
-          estimateSize: React.useCallback(() => 60, []),
-          scrollOffsetFn(event) {
-            const top = event?.target.scrollTop
+          estimateSize: React.useCallback(() => row_height, []),
+          scrollOffsetFn(e) {
+            const top = e?.target.scrollTop
             if (top >= 0) {
               props.setScrollOffsetTop && props.setScrollOffsetTop(top)
               return top
@@ -359,7 +327,11 @@ inject('pod', ({ StateContext, HubContext }) => {
           }
         })
 
-        const columnVirtualizer = useVirtual({
+        React.useEffect(() => {
+          if ('scrollOffsetTop' in props) row_v.scrollToOffset(props.scrollOffsetTop)
+        }, [props.scrollOffsetTop])
+
+        const col_v = useVirtual({
           horizontal: true,
           size: props.col_size,
           parentRef,
@@ -376,85 +348,67 @@ inject('pod', ({ StateContext, HubContext }) => {
           }
         })
 
-        return (
-          <>
-            <div
-              ref={parentRef}
-              className='List'
-              style={{
-                background: 'LightGray',
-                overflow: 'auto',
-                gridArea: '2 / 2 / 3 / 3'
-              }}
-            >
+        return <div ref={parentRef} className='schedule-grid'>
+          <div
+            style={{
+              height: `${row_v.totalSize}px`,
+              width: `${col_v.totalSize}px`,
+              position: 'relative'
+            }}
+          >
+            {props.render(row_v.virtualItems, col_v.virtualItems, (r, c, s) =>
               <div
+                key={`${r.index}/${c.index}`}
                 style={{
-                  height: `${rowVirtualizer.totalSize}px`,
-                  width: `${columnVirtualizer.totalSize}px`,
-                  position: 'relative'
+                  width: `${c.size}px`,
+                  height: `${r.size}px`,
+                  transform: `translateX(${c.start}px) translateY(${r.start}px)`
                 }}
               >
-                {props.render(rowVirtualizer.virtualItems, columnVirtualizer.virtualItems, (r, c, s) =>
+                {
+                s.type == 'startandend'
+                ?
+                <div
+                  className='s e'
+                  style={{
+                    width: `${s.end - s.start}px`,
+                    height: '20px',
+                    marginLeft: `${s.start}px`
+                  }}>
+                </div>
+                : s.type == 'start'
+                ?
                   <div
-                    key={`${r.index}/${c.index}`}
+                    className='s'
                     style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: `${c.size}px`,
-                      height: `${r.size}px`,
-                      transform: `translateX(${c.start}px) translateY(${r.start}px)`
-                    }}
-                  >
-                    {
-                    s.type == 'startandend'
-                    ?
-                    <div
-                      style={{
-                        backgroundColor: 'black',
-                        width: `${s.end - s.start}px`,
-                        height: '20px',
-                        marginLeft: `${s.start}px`,
-                        borderRadius: '20px'
-                      }}>
-                    </div>
-                    : s.type == 'start'
-                    ?
-                      <div
-                        style={{
-                          backgroundColor: 'black',
-                          width: `${col_width - s.start}px`,
-                          height: '20px',
-                          marginLeft: `${s.start}px`,
-                          borderRadius: '20px 0 0 20px'
-                        }}>
-                      </div>
-                    : s.type == 'end'
-                    ?
-                    <div
-                      style={{
-                        backgroundColor: 'black',
-                        width: `${s.end}px`,
-                        height: '20px',
-                        borderRadius: '0 20px 20px 0'
-                      }}>
-                    </div>
-                    : s.type == 'middle'
-                    ?
-                    <div
-                      style={{
-                        backgroundColor: 'black',
-                        width: `${col_width}px`,
-                        height: '20px'
-                      }}>
-                    </div>
-                    : ''}
+                      width: `${col_width - s.start}px`,
+                      height: '20px',
+                      marginLeft: `${s.start}px`
+                    }}>
                   </div>
-                )}
+                : s.type == 'end'
+                ?
+                <div
+                  className='e'
+                  style={{
+                    width: `${s.end}px`,
+                    height: '20px'
+                  }}>
+                </div>
+                : s.type == 'middle'
+                ?
+                <div
+                  className='m'
+                  style={{
+                    width: `${col_width}px`,
+                    height: '20px'
+                  }}>
+                </div>
+                : ''}
               </div>
-            </div>
-          </>
-        )
+            )}
+          </div>
+        </div>
       }
 
       return <SyncedScrolls />

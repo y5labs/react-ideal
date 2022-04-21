@@ -1,5 +1,69 @@
 @import url("../node_modules/modern-normalize/modern-normalize.css");
 
-article {
-    height 100%
-}
+article
+  height 100%
+
+.wrapper
+  display grid
+  grid-template-columns auto 1fr
+  grid-template-rows auto 1fr
+  grid-column-gap 0px
+  grid-row-gap 0px
+  height 100%
+
+.task-axis
+  -ms-overflow-style none
+  scrollbar-width none
+  background MediumSeaGreen
+  overflow auto
+  grid-row-start 2
+  grid-column-start 1
+  grid-row-end 3
+  grid-column-end 2
+
+  &::-webkit-scrollbar
+    display none
+
+  & > div > div
+    display inline-flex
+    align-items center
+    padding 0 10px
+    position absolute
+    top 0
+    left 0
+
+.timeline-axis
+  background silver
+  overflow hidden
+  grid-row-start 1
+  grid-column-start 2
+  grid-row-end 2
+  grid-column-end 3
+  & > div > div
+    display inline-flex
+    align-items center
+    justify-content center
+    position absolute
+    top 0
+    left 0
+
+.schedule-grid
+  background LightGray
+  overflow auto
+  grid-row-start 2
+  grid-column-start 2
+  grid-row-end 3
+  grid-column-end 3
+  & > div > div
+    position absolute
+    top 0
+    left 0
+  .s, .e, .m
+    background-color black
+    margin-top 6px
+  .s
+    border-top-left-radius 20px
+    border-bottom-left-radius 20px
+  .e
+    border-top-right-radius 20px
+    border-bottom-right-radius 20px
