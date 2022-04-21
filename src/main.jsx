@@ -158,8 +158,6 @@ inject('pod', ({ StateContext, HubContext }) => {
               }
             }
 
-
-
           return items
         }
 
@@ -218,8 +216,6 @@ inject('pod', ({ StateContext, HubContext }) => {
                   col_dims[1] = Math.max(col_dims[1], i.index)
                 }
                 const items = schedule_window(row_dims, col_dims)
-
-                // console.log(virtualRows, virtualColumns, row_dims, col_dims)
 
                 return virtualRows.map(r =>
                   virtualColumns.map(c => {
