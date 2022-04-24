@@ -29,7 +29,7 @@ const TimelimeAxis = props => {
     horizontal: true,
     size: props.size,
     parentRef,
-    estimateSize: useCallback(() => col_width, []),
+    estimateSize: props.calc_col_width,
     scrollOffsetFn(e) {
       const left = e?.target.scrollLeft ?? 0
       props.setScrollOffsetLeft && props.setScrollOffsetLeft(left)
@@ -67,7 +67,7 @@ const TaskAxis = props => {
   const row_v = useVirtual({
     size: props.size,
     parentRef,
-    estimateSize: useCallback(() => row_height, []),
+    estimateSize: props.calc_row_height,
     scrollOffsetFn(e) {
       const top = e?.target.scrollTop ?? 0
       props.setScrollOffsetTop && props.setScrollOffsetTop(top)
@@ -105,7 +105,7 @@ const Schedule = props => {
   const row_v = useVirtual({
     size: props.row_size,
     parentRef,
-    estimateSize: useCallback(() => row_height, []),
+    estimateSize: props.calc_row_height,
     scrollOffsetFn(e) {
       const top = e?.target.scrollTop ?? 0
       props.setScrollOffsetTop && props.setScrollOffsetTop(top)
@@ -117,7 +117,7 @@ const Schedule = props => {
     horizontal: true,
     size: props.col_size,
     parentRef,
-    estimateSize: useCallback(() => col_width, []),
+    estimateSize: props.calc_col_width,
     scrollOffsetFn(e) {
       const left = e?.target.scrollLeft ?? 0
       props.setScrollOffsetLeft && props.setScrollOffsetLeft(left)
@@ -186,8 +186,8 @@ const Schedule = props => {
                 onDragStart={() => setDragState({ c: c.index, r: r.index })}
                 onDrag={({ delta }) => [delta[0], 0]}
                 onDragEnd={({ delta }) => {
-                  console.log(s)
                   setDragState(null)
+                  props.onMove && props.onMove({ task: s.t, index: s.i, delta })
                 }}
               >
                 {isDragging ? (
@@ -281,6 +281,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                 row_items[start_n] = assert(i, task_dims[0], () => ({
                   type: 'startandend',
                   t,
+                  i,
                   start: offset_start(t.start_at),
                   end: offset_end(t.end_at)
                 }))
@@ -294,8 +295,9 @@ inject('pod', ({ StateContext, HubContext }) => {
                   () => ({
                     type: 'start',
                     t,
+                    i,
                     start: offset[0],
-                    end: (end_n - start_n) * col_width + offset[0]
+                    end: (end_n - start_n) * col_width + offset[1]
                   })
                 )
               if (!row_items[end_n])
@@ -305,8 +307,9 @@ inject('pod', ({ StateContext, HubContext }) => {
                   () => ({
                     type: 'end',
                     t,
+                    i,
                     start: (start_n - end_n) * col_width + offset[0],
-                    end: offset[0]
+                    end: offset[1]
                   })
                 )
               if (end_n - start_n > 1)
@@ -318,8 +321,9 @@ inject('pod', ({ StateContext, HubContext }) => {
                       () => ({
                         type: 'middle',
                         t,
+                        i,
                         start: (start_n - n) * col_width + offset[0],
-                        end: (end_n - n) * col_width + offset[0]
+                        end: (end_n - n) * col_width + offset[1]
                       })
                     )
             }
@@ -328,6 +332,10 @@ inject('pod', ({ StateContext, HubContext }) => {
           return items
         }
 
+        const [renderCount, setRenderCount] = useState(0)
+        const calc_col_width = useCallback(() => col_width, [renderCount])
+        const calc_row_height = useCallback(() => row_height, [renderCount])
+
         return (
           <div className='wrapper'>
             <div className='task-title'>Tasks</div>
@@ -335,6 +343,7 @@ inject('pod', ({ StateContext, HubContext }) => {
               setScrollOffsetLeft={setScrollOffsetLeft}
               scrollOffsetLeft={scrollOffsetLeft}
               size={time_axis_size}
+              calc_col_width={calc_col_width}
               render={(virtualItems, render) => {
                 const dims = [+Infinity, -Infinity]
                 for (const i of virtualItems) {
@@ -350,8 +359,8 @@ inject('pod', ({ StateContext, HubContext }) => {
             <TaskAxis
               setScrollOffsetTop={setScrollOffsetTop}
               scrollOffsetTop={scrollOffsetTop}
-              data={data}
               size={task_axis_size}
+              calc_row_height={calc_row_height}
               render={(virtualItems, render) => {
                 const dims = [+Infinity, -Infinity]
                 for (const i of virtualItems) {
@@ -371,6 +380,14 @@ inject('pod', ({ StateContext, HubContext }) => {
               scrollOffsetLeft={scrollOffsetLeft}
               row_size={task_axis_size}
               col_size={time_axis_size}
+              calc_row_height={calc_row_height}
+              calc_col_width={calc_col_width}
+              onMove={({ task, index, delta }) => {
+                const months = delta[0] / col_width
+                data[index].start_at = task.start_at.plus({ months })
+                data[index].end_at = task.end_at.plus({ months })
+                setRenderCount(state => state + 1)
+              }}
               render={(row_v, col_v, render) => {
                 const row_dims = [+Infinity, -Infinity]
                 for (const i of row_v) {
