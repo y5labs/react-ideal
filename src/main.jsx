@@ -182,7 +182,19 @@ const Schedule = props => {
                 transform: `translateX(${c.start}px) translateY(${r.start}px)`
               }}
             >
+              <div className={
+                isDragging
+                ? 'dragging'
+                : dragState?.r == r.index
+                ? 'imposter'
+                : dragState != null
+                ? ''
+                : s.i == props.selectedIndex
+                ? 'selected'
+                : ''
+              }>
               <Draggable
+                onTap={() => props.onTap && props.onTap({ task: s.t, index: s.i })}
                 onDragStart={() => setDragState({ c: c.index, r: r.index })}
                 onDrag={({ delta }) => [delta[0], 0]}
                 onDragEnd={({ delta }) => {
@@ -204,7 +216,8 @@ const Schedule = props => {
                   one()
                 )}
               </Draggable>
-              {isDragging && one()}
+              </div>
+              {isDragging && <div className={'imposter'}>{one()}</div>}
             </div>
           )
         })}
@@ -220,6 +233,7 @@ inject('pod', ({ StateContext, HubContext }) => {
       const PlanningView = () => {
         const [scrollOffsetTop, setScrollOffsetTop] = useState(0)
         const [scrollOffsetLeft, setScrollOffsetLeft] = useState(0)
+        const [selectedIndex, setSelectedIndex] = useState(null)
 
         const time_dims = [
           DateTime.min(...data.map(({ start_at }) => start_at)),
@@ -278,12 +292,16 @@ inject('pod', ({ StateContext, HubContext }) => {
 
             const start_n = task_dims[0] - col_dims[0]
             const row_items = items[i]
+            const standard = {
+              t,
+              i: oi,
+              s: selectedIndex == oi
+            }
             if (task_dims[0] == task_dims[1]) {
               if (!row_items[start_n])
                 row_items[start_n] = assert(oi, task_dims[0], () => ({
+                  ...standard,
                   type: 'startandend',
-                  t,
-                  i: oi,
                   start: offset_start(t.start_at),
                   end: offset_end(t.end_at)
                 }))
@@ -295,9 +313,8 @@ inject('pod', ({ StateContext, HubContext }) => {
                   oi,
                   task_dims[0],
                   () => ({
+                    ...standard,
                     type: 'start',
-                    t,
-                    i: oi,
                     start: offset[0],
                     end: (end_n - start_n) * col_width + offset[1]
                   })
@@ -307,9 +324,8 @@ inject('pod', ({ StateContext, HubContext }) => {
                   oi,
                   task_dims[1],
                   () => ({
+                    ...standard,
                     type: 'end',
-                    t,
-                    i: oi,
                     start: (start_n - end_n) * col_width + offset[0],
                     end: offset[1]
                   })
@@ -321,9 +337,8 @@ inject('pod', ({ StateContext, HubContext }) => {
                       oi,
                       n + col_dims[0],
                       () => ({
+                        ...standard,
                         type: 'middle',
-                        t,
-                        i: oi,
                         start: (start_n - n) * col_width + offset[0],
                         end: (end_n - n) * col_width + offset[1]
                       })
@@ -376,6 +391,7 @@ inject('pod', ({ StateContext, HubContext }) => {
               }}
             />
             <Schedule
+              selectedIndex={selectedIndex}
               setScrollOffsetTop={setScrollOffsetTop}
               scrollOffsetTop={scrollOffsetTop}
               setScrollOffsetLeft={setScrollOffsetLeft}
@@ -388,6 +404,11 @@ inject('pod', ({ StateContext, HubContext }) => {
                 const months = delta[0] / col_width
                 data[index].start_at = task.start_at.plus({ months })
                 data[index].end_at = task.end_at.plus({ months })
+                setRenderCount(state => state + 1)
+              }}
+              onTap={({ task, index }) => {
+                if (selectedIndex == index) setSelectedIndex(null)
+                else setSelectedIndex(index)
                 setRenderCount(state => state + 1)
               }}
               render={(row_v, col_v, render) => {
