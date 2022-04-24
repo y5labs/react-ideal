@@ -266,6 +266,8 @@ inject('pod', ({ StateContext, HubContext }) => {
               ({ t }) => t.end_at >= time_dims[0] && t.start_at < time_dims[1]
             )
           for (const { t, i } of filtered_tasks) {
+            const oi = i + row_dims[0]
+
             const task_dims = [
               t.start_at
                 .startOf('month')
@@ -278,10 +280,10 @@ inject('pod', ({ StateContext, HubContext }) => {
             const row_items = items[i]
             if (task_dims[0] == task_dims[1]) {
               if (!row_items[start_n])
-                row_items[start_n] = assert(i, task_dims[0], () => ({
+                row_items[start_n] = assert(oi, task_dims[0], () => ({
                   type: 'startandend',
                   t,
-                  i,
+                  i: oi,
                   start: offset_start(t.start_at),
                   end: offset_end(t.end_at)
                 }))
@@ -290,24 +292,24 @@ inject('pod', ({ StateContext, HubContext }) => {
               const offset = [offset_start(t.start_at), offset_end(t.end_at)]
               if (!row_items[start_n])
                 row_items[start_n] = assert(
-                  i + row_dims[0],
+                  oi,
                   task_dims[0],
                   () => ({
                     type: 'start',
                     t,
-                    i,
+                    i: oi,
                     start: offset[0],
                     end: (end_n - start_n) * col_width + offset[1]
                   })
                 )
               if (!row_items[end_n])
                 row_items[end_n] = assert(
-                  i + row_dims[0],
+                  oi,
                   task_dims[1],
                   () => ({
                     type: 'end',
                     t,
-                    i,
+                    i: oi,
                     start: (start_n - end_n) * col_width + offset[0],
                     end: offset[1]
                   })
@@ -316,12 +318,12 @@ inject('pod', ({ StateContext, HubContext }) => {
                 for (const n of range(start_n + 1, end_n - 1))
                   if (!row_items[n])
                     row_items[n] = assert(
-                      i + row_dims[0],
+                      oi,
                       n + col_dims[0],
                       () => ({
                         type: 'middle',
                         t,
-                        i,
+                        i: oi,
                         start: (start_n - n) * col_width + offset[0],
                         end: (end_n - n) * col_width + offset[1]
                       })

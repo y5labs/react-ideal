@@ -3,7 +3,7 @@ import { DateTime } from 'luxon'
 const data = [
   ['Begundeu', 1003, 1057],
   ['Agilinnti', 1020, 1088],
-  ['Blildeud', 1022, 1023],
+  ['Blildeud', 1024, 1024],
   ['Rofald', 1024, 1027],
   ['Chulfrti', 1026, 1028],
   ['Clon', 1028, 1077],
@@ -490,7 +490,7 @@ const data = [
 ].map(([name, x, y]) => ({
   name,
   start_at: DateTime.fromISO('2000-01-01').plus({ days: x * 5 }),
-  end_at: DateTime.fromISO('2000-01-01').plus({ days: 60 + y * 5 })
+  end_at: DateTime.fromISO('2000-01-01').plus({ days: 15 + y * 5 })
 }))
 
 export default data
