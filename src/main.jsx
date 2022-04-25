@@ -149,9 +149,18 @@ const Schedule = props => {
       >
         {props.render(row_v.virtualItems, col_v.virtualItems, (r, c, s) => {
           if (!s) return
-          const isMoving = dragState?.c == c.index && dragState?.r == r.index && dragState?.type == 'move'
-          const isMovingStart = dragState?.c == c.index && dragState?.r == r.index && dragState?.type == 'start'
-          const isMovingEnd = dragState?.c == c.index && dragState?.r == r.index && dragState?.type == 'end'
+          const isMoving =
+            dragState?.c == c.index &&
+            dragState?.r == r.index &&
+            dragState?.type == 'move'
+          const isMovingStart =
+            dragState?.c == c.index &&
+            dragState?.r == r.index &&
+            dragState?.type == 'start'
+          const isMovingEnd =
+            dragState?.c == c.index &&
+            dragState?.r == r.index &&
+            dragState?.type == 'end'
           const isDragRow = dragState?.r == r.index
           const isMovingAny = dragState?.type == 'move'
           const isSelected = s.i == props.selectedIndex
@@ -223,7 +232,9 @@ const Schedule = props => {
                   onTap={() =>
                     props.onTap && props.onTap({ task: s.t, index: s.i })
                   }
-                  onDragStart={() => setDragState({ c: c.index, r: r.index, type: 'move' })}
+                  onDragStart={() =>
+                    setDragState({ c: c.index, r: r.index, type: 'move' })
+                  }
                   onDrag={({ delta }) => {
                     setDragState(state => ({ ...state, delta }))
                     return [delta[0], 0]
@@ -240,31 +251,44 @@ const Schedule = props => {
                       style={{
                         position: 'absolute',
                         top: 0,
-                        width: `${s.end - s.start - (isMovingStart ? dragState?.delta?.[0] : 0) + (isMovingEnd ? dragState?.delta?.[0] : 0)}px`,
-                        marginLeft: `${s.start + (isMovingStart ? dragState?.delta?.[0] : 0)}px`
+                        width: `${
+                          s.end -
+                          s.start -
+                          (isMovingStart ? dragState?.delta?.[0] : 0) +
+                          (isMovingEnd ? dragState?.delta?.[0] : 0)
+                        }px`,
+                        marginLeft: `${
+                          s.start + (isMovingStart ? dragState?.delta?.[0] : 0)
+                        }px`
                       }}
                     ></div>
-                  ) :
-                  isDragRow ?
-                  ('')
-                  : (
+                  ) : !isDragRow ? (
                     one()
-                  )}
+                  ) : null}
                 </Draggable>
               </div>
               {startPos != null && (
                 <div
                   className={'handle-start'}
-                  style={{ marginLeft: `${s.start}px` }}>
+                  style={{ marginLeft: `${s.start}px` }}
+                >
                   <Draggable
-                    onDragStart={() => setDragState({ c: c.index, r: r.index, type: 'start', delta: [0, 0] })}
+                    onDragStart={() =>
+                      setDragState({
+                        c: c.index,
+                        r: r.index,
+                        type: 'start',
+                        delta: [0, 0]
+                      })
+                    }
                     onDrag={({ delta }) => {
                       setDragState(state => ({ ...state, delta }))
                       return [delta[0], 0]
                     }}
                     onDragEnd={({ delta }) => {
                       setDragState(null)
-                      props.onMoveStart && props.onMoveStart({ task: s.t, index: s.i, delta })
+                      props.onMoveStart &&
+                        props.onMoveStart({ task: s.t, index: s.i, delta })
                     }}
                   >
                     <div></div>
@@ -277,14 +301,22 @@ const Schedule = props => {
                   style={{ marginLeft: `${s.end}px` }}
                 >
                   <Draggable
-                    onDragStart={() => setDragState({ c: c.index, r: r.index, type: 'end', delta: [0, 0] })}
+                    onDragStart={() =>
+                      setDragState({
+                        c: c.index,
+                        r: r.index,
+                        type: 'end',
+                        delta: [0, 0]
+                      })
+                    }
                     onDrag={({ delta }) => {
                       setDragState(state => ({ ...state, delta }))
                       return [delta[0], 0]
                     }}
                     onDragEnd={({ delta }) => {
                       setDragState(null)
-                      props.onMoveEnd && props.onMoveEnd({ task: s.t, index: s.i, delta })
+                      props.onMoveEnd &&
+                        props.onMoveEnd({ task: s.t, index: s.i, delta })
                     }}
                   >
                     <div></div>
