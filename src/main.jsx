@@ -158,14 +158,12 @@ const Schedule = props => {
           const startPos =
             isSelected &&
             !isMovingAny &&
-            dragState?.type != 'end' &&
             (s.type == 'startandend' || s.type == 'start')
               ? s.start
               : null
           const endPos =
             isSelected &&
             !isMovingAny &&
-            dragState?.type != 'start' &&
             (s.type == 'startandend' || s.type == 'end')
               ? s.end
               : null
@@ -246,7 +244,10 @@ const Schedule = props => {
                         marginLeft: `${s.start + (isMovingStart ? dragState?.delta?.[0] : 0)}px`
                       }}
                     ></div>
-                  ) : (
+                  ) :
+                  isDragRow ?
+                  ('')
+                  : (
                     one()
                   )}
                 </Draggable>
@@ -290,7 +291,6 @@ const Schedule = props => {
                   </Draggable>
                 </div>
               )}
-              {(isMoving || isMovingStart || isMovingEnd) && <div className={'imposter'}>{one()}</div>}
             </div>
           )
         })}
