@@ -153,16 +153,19 @@ const Schedule = props => {
           const isMovingStart = dragState?.c == c.index && dragState?.r == r.index && dragState?.type == 'start'
           const isMovingEnd = dragState?.c == c.index && dragState?.r == r.index && dragState?.type == 'end'
           const isDragRow = dragState?.r == r.index
+          const isMovingAny = dragState?.type == 'move'
           const isSelected = s.i == props.selectedIndex
           const startPos =
             isSelected &&
-            !isMoving &&
+            !isMovingAny &&
+            dragState?.type != 'end' &&
             (s.type == 'startandend' || s.type == 'start')
               ? s.start
               : null
           const endPos =
             isSelected &&
-            !isMoving &&
+            !isMovingAny &&
+            dragState?.type != 'start' &&
             (s.type == 'startandend' || s.type == 'end')
               ? s.end
               : null
@@ -466,12 +469,16 @@ inject('pod', ({ StateContext, HubContext }) => {
               }}
               onMoveStart={({ task, index, delta }) => {
                 const months = delta[0] / col_width
-                data[index].start_at = task.start_at.plus({ months })
+                const d = data[index]
+                d.start_at = task.start_at.plus({ months })
+                if (d.end_at < d.start_at) d.end_at = d.start_at
                 setRenderCount(state => state + 1)
               }}
               onMoveEnd={({ task, index, delta }) => {
                 const months = delta[0] / col_width
-                data[index].end_at = task.end_at.plus({ months })
+                const d = data[index]
+                d.end_at = task.end_at.plus({ months })
+                if (d.end_at < d.start_at) d.start_at = d.end_at
                 setRenderCount(state => state + 1)
               }}
               onTap={({ task, index }) => {
