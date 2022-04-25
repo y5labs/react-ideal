@@ -9,6 +9,8 @@ import data from './data'
 const col_width = 120
 const row_height = 26
 
+const nice_pos = pos => Math.round(pos * 100) / 100
+
 const range = (start, end) =>
   Array(end - start + 1)
     .fill()
@@ -19,8 +21,9 @@ const month_days = range(0, 11).map(n => {
   const end_at = start_at.plus({ months: 1 })
   return end_at.diff(start_at, 'days').as('days')
 })
-const offset_start = d => ((d.day - 1) / month_days[d.month - 1]) * col_width
-const offset_end = d => (d.day / month_days[d.month - 1]) * col_width
+const offset_start = d =>
+  nice_pos(((d.day - 1) / month_days[d.month - 1]) * col_width)
+const offset_end = d => nice_pos((d.day / month_days[d.month - 1]) * col_width)
 
 const TimelimeAxis = props => {
   const parentRef = useRef(false)
@@ -146,6 +149,23 @@ const Schedule = props => {
       >
         {props.render(row_v.virtualItems, col_v.virtualItems, (r, c, s) => {
           if (!s) return
+          const isMoving = dragState?.c == c.index && dragState?.r == r.index && dragState?.type == 'move'
+          const isMovingStart = dragState?.c == c.index && dragState?.r == r.index && dragState?.type == 'start'
+          const isMovingEnd = dragState?.c == c.index && dragState?.r == r.index && dragState?.type == 'end'
+          const isDragRow = dragState?.r == r.index
+          const isSelected = s.i == props.selectedIndex
+          const startPos =
+            isSelected &&
+            !isMoving &&
+            (s.type == 'startandend' || s.type == 'start')
+              ? s.start
+              : null
+          const endPos =
+            isSelected &&
+            !isMoving &&
+            (s.type == 'startandend' || s.type == 'end')
+              ? s.end
+              : null
           const one = () =>
             s.type == 'startandend' ? (
               <div
@@ -172,7 +192,6 @@ const Schedule = props => {
             ) : (
               ''
             )
-          const isDragging = dragState?.c == c.index && dragState?.r == r.index
           return (
             <div
               key={`${r.index}/${c.index}`}
@@ -182,42 +201,93 @@ const Schedule = props => {
                 transform: `translateX(${c.start}px) translateY(${r.start}px)`
               }}
             >
-              <div className={
-                isDragging
-                ? 'dragging'
-                : dragState?.r == r.index
-                ? 'imposter'
-                : dragState != null
-                ? ''
-                : s.i == props.selectedIndex
-                ? 'selected'
-                : ''
-              }>
-              <Draggable
-                onTap={() => props.onTap && props.onTap({ task: s.t, index: s.i })}
-                onDragStart={() => setDragState({ c: c.index, r: r.index })}
-                onDrag={({ delta }) => [delta[0], 0]}
-                onDragEnd={({ delta }) => {
-                  setDragState(null)
-                  props.onMove && props.onMove({ task: s.t, index: s.i, delta })
-                }}
+              <div
+                className={
+                  isMoving
+                    ? 'moving'
+                    : isMovingStart
+                    ? 'moving-start'
+                    : isMovingEnd
+                    ? 'moving-end'
+                    : isDragRow
+                    ? 'imposter'
+                    : dragState != null
+                    ? ''
+                    : isSelected
+                    ? 'selected'
+                    : ''
+                }
               >
-                {isDragging ? (
-                  <div
-                    className='s e d'
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      width: `${s.end - s.start}px`,
-                      marginLeft: `${s.start}px`
-                    }}
-                  ></div>
-                ) : (
-                  one()
-                )}
-              </Draggable>
+                <Draggable
+                  onTap={() =>
+                    props.onTap && props.onTap({ task: s.t, index: s.i })
+                  }
+                  onDragStart={() => setDragState({ c: c.index, r: r.index, type: 'move' })}
+                  onDrag={({ delta }) => {
+                    setDragState(state => ({ ...state, delta }))
+                    return [delta[0], 0]
+                  }}
+                  onDragEnd={({ delta }) => {
+                    setDragState(null)
+                    props.onMove &&
+                      props.onMove({ task: s.t, index: s.i, delta })
+                  }}
+                >
+                  {isMoving || isMovingStart || isMovingEnd ? (
+                    <div
+                      className='s e d'
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        width: `${s.end - s.start - (isMovingStart ? dragState?.delta?.[0] : 0) + (isMovingEnd ? dragState?.delta?.[0] : 0)}px`,
+                        marginLeft: `${s.start + (isMovingStart ? dragState?.delta?.[0] : 0)}px`
+                      }}
+                    ></div>
+                  ) : (
+                    one()
+                  )}
+                </Draggable>
               </div>
-              {isDragging && <div className={'imposter'}>{one()}</div>}
+              {startPos != null && (
+                <div
+                  className={'handle-start'}
+                  style={{ marginLeft: `${s.start}px` }}>
+                  <Draggable
+                    onDragStart={() => setDragState({ c: c.index, r: r.index, type: 'start', delta: [0, 0] })}
+                    onDrag={({ delta }) => {
+                      setDragState(state => ({ ...state, delta }))
+                      return [delta[0], 0]
+                    }}
+                    onDragEnd={({ delta }) => {
+                      setDragState(null)
+                      props.onMoveStart && props.onMoveStart({ task: s.t, index: s.i, delta })
+                    }}
+                  >
+                    <div></div>
+                  </Draggable>
+                </div>
+              )}
+              {endPos != null && (
+                <div
+                  className={'handle-end'}
+                  style={{ marginLeft: `${s.end}px` }}
+                >
+                  <Draggable
+                    onDragStart={() => setDragState({ c: c.index, r: r.index, type: 'end', delta: [0, 0] })}
+                    onDrag={({ delta }) => {
+                      setDragState(state => ({ ...state, delta }))
+                      return [delta[0], 0]
+                    }}
+                    onDragEnd={({ delta }) => {
+                      setDragState(null)
+                      props.onMoveEnd && props.onMoveEnd({ task: s.t, index: s.i, delta })
+                    }}
+                  >
+                    <div></div>
+                  </Draggable>
+                </div>
+              )}
+              {(isMoving || isMovingStart || isMovingEnd) && <div className={'imposter'}>{one()}</div>}
             </div>
           )
         })}
@@ -309,40 +379,28 @@ inject('pod', ({ StateContext, HubContext }) => {
               const end_n = task_dims[1] - col_dims[0]
               const offset = [offset_start(t.start_at), offset_end(t.end_at)]
               if (!row_items[start_n])
-                row_items[start_n] = assert(
-                  oi,
-                  task_dims[0],
-                  () => ({
-                    ...standard,
-                    type: 'start',
-                    start: offset[0],
-                    end: (end_n - start_n) * col_width + offset[1]
-                  })
-                )
+                row_items[start_n] = assert(oi, task_dims[0], () => ({
+                  ...standard,
+                  type: 'start',
+                  start: offset[0],
+                  end: (end_n - start_n) * col_width + offset[1]
+                }))
               if (!row_items[end_n])
-                row_items[end_n] = assert(
-                  oi,
-                  task_dims[1],
-                  () => ({
-                    ...standard,
-                    type: 'end',
-                    start: (start_n - end_n) * col_width + offset[0],
-                    end: offset[1]
-                  })
-                )
+                row_items[end_n] = assert(oi, task_dims[1], () => ({
+                  ...standard,
+                  type: 'end',
+                  start: (start_n - end_n) * col_width + offset[0],
+                  end: offset[1]
+                }))
               if (end_n - start_n > 1)
                 for (const n of range(start_n + 1, end_n - 1))
                   if (!row_items[n])
-                    row_items[n] = assert(
-                      oi,
-                      n + col_dims[0],
-                      () => ({
-                        ...standard,
-                        type: 'middle',
-                        start: (start_n - n) * col_width + offset[0],
-                        end: (end_n - n) * col_width + offset[1]
-                      })
-                    )
+                    row_items[n] = assert(oi, n + col_dims[0], () => ({
+                      ...standard,
+                      type: 'middle',
+                      start: (start_n - n) * col_width + offset[0],
+                      end: (end_n - n) * col_width + offset[1]
+                    }))
             }
           }
 
@@ -403,6 +461,16 @@ inject('pod', ({ StateContext, HubContext }) => {
               onMove={({ task, index, delta }) => {
                 const months = delta[0] / col_width
                 data[index].start_at = task.start_at.plus({ months })
+                data[index].end_at = task.end_at.plus({ months })
+                setRenderCount(state => state + 1)
+              }}
+              onMoveStart={({ task, index, delta }) => {
+                const months = delta[0] / col_width
+                data[index].start_at = task.start_at.plus({ months })
+                setRenderCount(state => state + 1)
+              }}
+              onMoveEnd={({ task, index, delta }) => {
+                const months = delta[0] / col_width
                 data[index].end_at = task.end_at.plus({ months })
                 setRenderCount(state => state + 1)
               }}

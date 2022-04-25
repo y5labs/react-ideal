@@ -66,7 +66,7 @@ const Draggable = ({
       transform: `translate(${position[0] + state.delta[0]}px, ${
         position[1] + state.delta[1]
       }px)`,
-      zIndex: state.isDragging ? 2 : null,
+      zIndex: state.isDragging ? 100 : null,
       position: state.isDragging ? 'absolute' : 'relative'
     }),
     [position, state.isDragging, state.delta]
