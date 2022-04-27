@@ -45,6 +45,7 @@ const Schedule = props => {
   return (
     <div {...events} ref={parentRef} className='schedule-grid'>
       <div
+        onClick={() => props.onTap({task: null, index: null})}
         style={{
           height: `${row_v.totalSize}px`,
           width: `${col_v.totalSize}px`,
