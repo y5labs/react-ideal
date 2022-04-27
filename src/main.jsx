@@ -7,6 +7,7 @@ import Draggable from './draggable'
 import data from './data'
 
 import TimelimeAxis from './timelineaxis'
+import TaskAxis from './taskaxis'
 
 const col_width = 120
 const row_height = 26
@@ -26,43 +27,6 @@ const month_days = range(0, 11).map(n => {
 const offset_start = d =>
   nice_pos(((d.day - 1) / month_days[d.month - 1]) * col_width)
 const offset_end = d => nice_pos((d.day / month_days[d.month - 1]) * col_width)
-
-const TaskAxis = props => {
-  const parentRef = useRef(false)
-
-  const row_v = useVirtual({
-    size: props.size,
-    parentRef,
-    estimateSize: props.calc_row_height,
-    scrollOffsetFn(e) {
-      const top = e?.target.scrollTop ?? 0
-      props.setScrollOffsetTop && props.setScrollOffsetTop(top)
-      return top
-    }
-  })
-
-  useEffect(() => {
-    if ('scrollOffsetTop' in props) row_v.scrollToOffset(props.scrollOffsetTop)
-  }, [props.scrollOffsetTop])
-
-  return (
-    <div ref={parentRef} className='task-axis'>
-      <div style={{ height: `${row_v.totalSize}px`, position: 'relative' }}>
-        {props.render(row_v.virtualItems, (i, s) => (
-          <div
-            key={i.index}
-            style={{
-              height: `${i.size}px`,
-              transform: `translateY(${i.start}px)`
-            }}
-          >
-            {s}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 const Schedule = props => {
   const parentRef = useRef(false)
