@@ -236,8 +236,10 @@ const Schedule = props => {
                     setDragState({ c: c.index, r: r.index, type: 'move' })
                   }
                   onDrag={({ delta }) => {
+                    if (props.onMoveDrag) 
+                      delta = props.onMoveDrag({ task: s.t, index: s.i, delta })
                     setDragState(state => ({ ...state, delta }))
-                    return [delta[0], 0]
+                    return delta
                   }}
                   onDragEnd={({ delta }) => {
                     setDragState(null)
@@ -282,8 +284,10 @@ const Schedule = props => {
                       })
                     }
                     onDrag={({ delta }) => {
+                      if (props.onMoveStartDrag) 
+                        delta = props.onMoveStartDrag({ task: s.t, index: s.i, delta })
                       setDragState(state => ({ ...state, delta }))
-                      return [delta[0], 0]
+                      return delta
                     }}
                     onDragEnd={({ delta }) => {
                       setDragState(null)
@@ -310,8 +314,10 @@ const Schedule = props => {
                       })
                     }
                     onDrag={({ delta }) => {
+                      if (props.onMoveEndDrag)
+                        delta = props.onMoveEndDrag({ task: s.t, index: s.i, delta })
                       setDragState(state => ({ ...state, delta }))
-                      return [delta[0], 0]
+                      return delta
                     }}
                     onDragEnd={({ delta }) => {
                       setDragState(null)
@@ -499,6 +505,9 @@ inject('pod', ({ StateContext, HubContext }) => {
                 data[index].end_at = task.end_at.plus({ months })
                 setRenderCount(state => state + 1)
               }}
+              onMoveDrag={({ task, index, delta }) => {
+                return [delta[0], 0]
+              }}
               onMoveStart={({ task, index, delta }) => {
                 const months = delta[0] / col_width
                 const d = data[index]
@@ -506,12 +515,18 @@ inject('pod', ({ StateContext, HubContext }) => {
                 if (d.end_at < d.start_at) d.end_at = d.start_at
                 setRenderCount(state => state + 1)
               }}
+              onMoveStartDrag={({ task, index, delta }) => {
+                return [delta[0], 0]
+              }}
               onMoveEnd={({ task, index, delta }) => {
                 const months = delta[0] / col_width
                 const d = data[index]
                 d.end_at = task.end_at.plus({ months })
                 if (d.end_at < d.start_at) d.start_at = d.end_at
                 setRenderCount(state => state + 1)
+              }}
+              onMoveEndDrag={({ task, index, delta }) => {
+                return [delta[0], 0]
               }}
               onTap={({ task, index }) => {
                 if (selectedIndex == index) setSelectedIndex(null)
