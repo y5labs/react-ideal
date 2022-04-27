@@ -59,6 +59,12 @@ const Schedule = props => {
           const isDragRow = dragState?.r == r.index
           const isMovingAny = dragState?.type == 'move'
           const isSelected = s.i == props.selectedIndex
+          const dims = [
+              s.start + (isMovingStart ? dragState?.delta?.[0] : 0),
+              s.end + (isMovingEnd ? dragState?.delta?.[0] : 0)
+          ]
+          const dimWidth = dims[1] - dims[0]
+          if (isMovingStart) console.log(dims, dimWidth)
           const startPos = isSelected && !isMovingAny && (s.type == 'startandend' || s.type == 'start') ? s.start : null
           const endPos = isSelected && !isMovingAny && (s.type == 'startandend' || s.type == 'end') ? s.end : null
           const one = () =>
@@ -131,13 +137,8 @@ const Schedule = props => {
                       style={{
                         position: 'absolute',
                         top: 0,
-                        width: `${
-                          s.end -
-                          s.start -
-                          (isMovingStart ? dragState?.delta?.[0] : 0) +
-                          (isMovingEnd ? dragState?.delta?.[0] : 0)
-                        }px`,
-                        marginLeft: `${s.start + (isMovingStart ? dragState?.delta?.[0] : 0)}px`
+                        width: `${dimWidth}px`,
+                        marginLeft: `${dims[0]}px`
                       }}
                     ></div>
                   ) : !isDragRow ? (
