@@ -188,6 +188,9 @@ inject('pod', ({ StateContext, HubContext }) => {
               col_size={time_axis_size}
               calc_row_height={calc_row_height}
               calc_col_width={calc_col_width}
+              mapPos={(dims)=>{
+                return dims
+              }}
               onMove={({ task, index, delta }) => {
                 const months = delta[0] / col_width
                 data[index].start_at = task.start_at.plus({ months })
