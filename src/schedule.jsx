@@ -102,6 +102,9 @@ const Schedule = props => {
                 transform: `translateX(${c.start}px) translateY(${r.start}px)`
               }}
             >
+              {isSelected
+              ?
+              <>
               <div
                 className={
                   isMoving
@@ -194,6 +197,11 @@ const Schedule = props => {
                   </Draggable>
                 </div>
               )}
+              </>
+              : <div onClick={e => {
+                props.onTap && props.onTap({ task: s.t, index: s.i })
+                e.stopPropagation()
+              }}>{one()}</div>}
             </div>
           )
         })}
