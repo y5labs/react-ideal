@@ -16,6 +16,16 @@ const TimelimeAxis = props => {
     }
   })
 
+  const m = 100000
+
+  const shortMoney = m => {
+    return new Intl.NumberFormat('en-NZ', {
+      maximumFractionDigits: 1,
+      notation: 'compact',
+      compactDisplay: 'short'
+    }).format(m)
+  }
+
   useEffect(() => {
     if ('scrollOffsetLeft' in props) col_v.scrollToOffset(props.scrollOffsetLeft)
   }, [props.scrollOffsetLeft])
@@ -31,7 +41,8 @@ const TimelimeAxis = props => {
               transform: `translateX(${i.start}px)`
             }}
           >
-            {s}
+            <span>{s}</span>
+            <span>{shortMoney(m)}</span>
           </div>
         ))}
       </div>
