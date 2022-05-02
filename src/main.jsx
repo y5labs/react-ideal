@@ -1,5 +1,5 @@
 import inject from 'seacreature/lib/inject'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, Children } from 'react'
 import { DateTime } from 'luxon'
 import data from './data'
 
@@ -157,9 +157,9 @@ inject('pod', ({ StateContext, HubContext }) => {
           <>
             <div className='filters'>
               <nav className='timescales'>
-                {['1m', '1q', '1y'].map(u => (
+                {Children.toArray(['1m', '1q', '1y'].map(u => (
                   <Timescale scale={scale} updateScale={setScale} unit={u} />
-                ))}
+                )))}
               </nav>
             </div>
             <div className='wrapper'>
