@@ -35,7 +35,7 @@ const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
   const time_window = dims => range(dims[0], dims[1]).map(offset_to_time)
 
   const task_axis_size = task_dims[1] - task_dims[0] + 1
-  const offset_to_task = n => get_data()[n].name
+  const offset_to_task = n => get_data([n, n + 1])[0].name
   const task_window = dims => range(dims[0], dims[1]).map(offset_to_task)
 
   const cache = {}
@@ -55,12 +55,7 @@ const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
       range(col_dims[0], col_dims[1]).map(i => cache?.[r]?.[i])
     )
 
-    const filtered_tasks = get_data()
-      .slice(row_dims[0], row_dims[1])
-      .map((t, i) => ({ t, i }))
-      .filter(
-        ({ t }) => t.end_at >= time_dims[0] && t.start_at < time_dims[1]
-      )
+    const filtered_tasks = get_data(row_dims).map((t, i) => ({ t, i }))
     for (const { t, i } of filtered_tasks) {
       const oi = i + row_dims[0]
 

@@ -35,7 +35,7 @@ inject('pod', ({ StateContext, HubContext }) => {
           selectedIndex,
           time_dims,
           task_dims,
-          get_data: () => data
+          get_data: dims => data.slice(dims[0], dims[1])
         })
 
         const [renderCount, setRenderCount] = useState(0)
