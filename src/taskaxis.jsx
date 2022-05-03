@@ -30,7 +30,7 @@ const TaskAxis = props => {
               transform: `translateY(${i.start}px)`
             }}
           >
-            {s}
+            {s == null ? '…' : s}
           </div>
         ))}
       </div>

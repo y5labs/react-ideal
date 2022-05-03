@@ -11,10 +11,21 @@ import Schedule from './schedule'
 
 import * as timescales from './timescales'
 
+const range = (start, end) =>
+  Array(end - start + 1)
+    .fill()
+    .map((_, idx) => start + idx)
+
 const timescale_byunit = {
   '1m': timescales.month,
   '1q': timescales.quarter,
   '1y': timescales.year,
+}
+
+const empty_task = {
+  name: null,
+  start_at: null,
+  end_at: null
 }
 
 inject('pod', ({ StateContext, HubContext }) => {
@@ -48,7 +59,13 @@ inject('pod', ({ StateContext, HubContext }) => {
           time_dims,
           task_dims,
           get_data: dims => {
-            return data.slice(dims[0], dims[1])
+            if (results.data.length == 0)
+              return range(dims[0], dims[1]).map(i => empty_task)
+            return range(dims[0], dims[1]).map(i => {
+              if (i < results.row_dims[0]) return empty_task
+              if (i >= results.row_dims[1]) return empty_task
+              return results.data[i - results.row_dims[0]]
+            })
           }
         })
 
@@ -69,8 +86,8 @@ inject('pod', ({ StateContext, HubContext }) => {
             next_col_dims[1] = col_dims[1]
             await sleep(0)
             setResults(res => ({ ...res, is_loaded: false }))
-            await sleep(2000)
             // TODO: query server with diff
+            await sleep(200)
             current_row_dims[0] = row_dims[0]
             current_row_dims[1] = row_dims[1]
             current_col_dims[0] = col_dims[0]

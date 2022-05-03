@@ -51,6 +51,7 @@ const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
 
     const filtered_tasks = get_data(row_dims).map((t, i) => ({ t, i }))
     for (const { t, i } of filtered_tasks) {
+      if (!t.start_at | !t.end_at) continue
       const oi = i + row_dims[0]
 
       const task_dims = [
