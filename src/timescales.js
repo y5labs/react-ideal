@@ -20,7 +20,6 @@ const offset_start = d =>
   nice_pos(((d.day - 1) / month_days[d.month - 1]) * col_width)
 const offset_end = d => nice_pos((d.day / month_days[d.month - 1]) * col_width)
 
-
 const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
   const start_at = time_dims[0].startOf('month')
   const time_axis_size =
@@ -46,11 +45,6 @@ const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
   }
 
   const schedule_window = (row_dims, col_dims) => {
-    const time_dims = [
-      start_at.plus({ months: col_dims[0] }),
-      start_at.plus({ months: col_dims[1] + 1 })
-    ]
-
     const items = range(row_dims[0], row_dims[1]).map(r =>
       range(col_dims[0], col_dims[1]).map(i => cache?.[r]?.[i])
     )

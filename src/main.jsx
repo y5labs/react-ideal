@@ -1,5 +1,7 @@
 import inject from 'seacreature/lib/inject'
-import { useState, useCallback, Children } from 'react'
+import sleep from 'seacreature/lib/sleep'
+import one_debounce from 'seacreature/lib/one_debounce'
+import { useState, useCallback, useEffect, useContext, Children } from 'react'
 import { DateTime } from 'luxon'
 import data from './data'
 
@@ -20,6 +22,8 @@ inject('pod', ({ StateContext, HubContext }) => {
     '/',
     p => () => {
       const PlanningView = () => {
+        const hub = useContext(HubContext)
+
         const [scrollOffsetTop, setScrollOffsetTop] = useState(0)
         const [scrollOffsetLeft, setScrollOffsetLeft] = useState(0)
         const [selectedIndex, setSelectedIndex] = useState(null)
@@ -31,16 +35,65 @@ inject('pod', ({ StateContext, HubContext }) => {
         ]
         const task_dims = [0, data.length - 1]
 
+        const [renderCount, setRenderCount] = useState(0)
+        const [results, setResults] = useState({
+          row_dims: [null, null],
+          col_dims: [null, null],
+          data: [],
+          is_loaded: false
+        })
+
         const fns = timescale_byunit[scale]({
           selectedIndex,
           time_dims,
           task_dims,
-          get_data: dims => data.slice(dims[0], dims[1])
+          get_data: dims => {
+            return data.slice(dims[0], dims[1])
+          }
         })
 
-        const [renderCount, setRenderCount] = useState(0)
         const calc_col_width = useCallback(() => timescales.col_width, [renderCount])
         const calc_row_height = useCallback(() => timescales.row_height, [renderCount])
+
+        useEffect(hub.effect(hub => {
+          const next_row_dims = [null, null]
+          const next_col_dims = [null, null]
+
+          const current_row_dims = [null, null]
+          const current_col_dims = [null, null]
+
+          const query = one_debounce(async ({ row_dims, col_dims }) => {
+            next_row_dims[0] = row_dims[0]
+            next_row_dims[1] = row_dims[1]
+            next_col_dims[0] = col_dims[0]
+            next_col_dims[1] = col_dims[1]
+            await sleep(0)
+            setResults(res => ({ ...res, is_loaded: false }))
+            await sleep(2000)
+            // TODO: query server with diff
+            current_row_dims[0] = row_dims[0]
+            current_row_dims[1] = row_dims[1]
+            current_col_dims[0] = col_dims[0]
+            current_col_dims[1] = col_dims[1]
+            setResults({
+              row_dims,
+              col_dims,
+              data: data.slice(row_dims[0], row_dims[1]),
+              is_loaded: true
+            })
+          })
+
+          hub.on('schedule window', ({ row_dims, col_dims }) => {
+            if (row_dims[0] == next_row_dims[0]
+              && row_dims[1] == next_row_dims[1]
+              && col_dims[0] == next_col_dims[0]
+              && col_dims[1] == next_col_dims[1]) return
+            query({ row_dims, col_dims })
+          })
+
+          return () => {
+          }
+        }), [])
 
         const Timescale = p => {
           return (
@@ -144,6 +197,7 @@ inject('pod', ({ StateContext, HubContext }) => {
                     col_dims[0] = Math.min(col_dims[0], i.index)
                     col_dims[1] = Math.max(col_dims[1], i.index)
                   }
+                  hub.emit('schedule window', { row_dims, col_dims })
                   const items = fns.schedule_window(row_dims, col_dims)
 
                   return row_v.map(r =>
