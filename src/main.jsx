@@ -3,7 +3,7 @@ import { useState, useCallback, Children } from 'react'
 import { DateTime } from 'luxon'
 import data from './data'
 
-import TimelimeAxis from './timelineaxis'
+import TimelineAxis from './timelineaxis'
 import TaskAxis from './taskaxis'
 import Schedule from './schedule'
 
@@ -164,7 +164,7 @@ inject('pod', ({ StateContext, HubContext }) => {
             </div>
             <div className='wrapper'>
               <div className='task-title'>Tasks</div>
-              <TimelimeAxis
+              <TimelineAxis
                 setScrollOffsetLeft={setScrollOffsetLeft}
                 scrollOffsetLeft={scrollOffsetLeft}
                 size={time_axis_size}

@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { useVirtual } from 'react-virtual'
 
-const TimelimeAxis = props => {
+const TimelineAxis = props => {
   const parentRef = useRef(false)
 
   const col_v = useVirtual({
@@ -55,4 +55,4 @@ const TimelimeAxis = props => {
   )
 }
 
-export default TimelimeAxis
+export default TimelineAxis
