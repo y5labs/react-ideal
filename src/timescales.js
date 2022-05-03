@@ -16,9 +16,9 @@ const month_days = range(0, 11).map(n => {
   const end_at = start_at.plus({ months: 1 })
   return end_at.diff(start_at, 'days').as('days')
 })
-const offset_start = d =>
+const month_offset_start = d =>
   nice_pos(((d.day - 1) / month_days[d.month - 1]) * col_width)
-const offset_end = d => nice_pos((d.day / month_days[d.month - 1]) * col_width)
+const month_offset_end = d => nice_pos((d.day / month_days[d.month - 1]) * col_width)
 
 const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
   const start_at = time_dims[0].startOf('month')
@@ -74,12 +74,12 @@ const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
           row_items[start_n] = assert(oi, task_dims[0], () => ({
             ...standard,
             type: 'startandend',
-            start: offset_start(t.start_at),
-            end: offset_end(t.end_at)
+            start: month_offset_start(t.start_at),
+            end: month_offset_end(t.end_at)
           }))
       } else {
         const end_n = task_dims[1] - col_dims[0]
-        const offset = [offset_start(t.start_at), offset_end(t.end_at)]
+        const offset = [month_offset_start(t.start_at), month_offset_end(t.end_at)]
         if (!row_items[start_n])
           row_items[start_n] = assert(oi, task_dims[0], () => ({
             ...standard,
@@ -142,8 +142,6 @@ const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
     task_axis_size,
     task_window,
     schedule_window,
-    col_width,
-    row_height,
     calc_move,
     calc_move_start,
     calc_move_end
@@ -204,12 +202,12 @@ const quarter = ({ selectedIndex, time_dims, task_dims, get_data }) => {
           row_items[start_n] = assert(oi, task_dims[0], () => ({
             ...standard,
             type: 'startandend',
-            start: offset_start(t.start_at),
-            end: offset_end(t.end_at)
+            start: month_offset_start(t.start_at),
+            end: month_offset_end(t.end_at)
           }))
       } else {
         const end_n = task_dims[1] - col_dims[0]
-        const offset = [offset_start(t.start_at), offset_end(t.end_at)]
+        const offset = [month_offset_start(t.start_at), month_offset_end(t.end_at)]
         if (!row_items[start_n])
           row_items[start_n] = assert(oi, task_dims[0], () => ({
             ...standard,
@@ -272,8 +270,6 @@ const quarter = ({ selectedIndex, time_dims, task_dims, get_data }) => {
     task_axis_size,
     task_window,
     schedule_window,
-    col_width,
-    row_height,
     calc_move,
     calc_move_start,
     calc_move_end
@@ -333,12 +329,12 @@ const year = ({ selectedIndex, time_dims, task_dims, get_data }) => {
           row_items[start_n] = assert(oi, task_dims[0], () => ({
             ...standard,
             type: 'startandend',
-            start: offset_start(t.start_at),
-            end: offset_end(t.end_at)
+            start: month_offset_start(t.start_at),
+            end: month_offset_end(t.end_at)
           }))
       } else {
         const end_n = task_dims[1] - col_dims[0]
-        const offset = [offset_start(t.start_at), offset_end(t.end_at)]
+        const offset = [month_offset_start(t.start_at), month_offset_end(t.end_at)]
         if (!row_items[start_n])
           row_items[start_n] = assert(oi, task_dims[0], () => ({
             ...standard,
@@ -401,8 +397,6 @@ const year = ({ selectedIndex, time_dims, task_dims, get_data }) => {
     task_axis_size,
     task_window,
     schedule_window,
-    col_width,
-    row_height,
     calc_move,
     calc_move_start,
     calc_move_end
