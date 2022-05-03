@@ -119,6 +119,33 @@ const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
     return items
   }
 
+  const calc_move = ({ task, index, delta }) => {
+    const months = delta[0] / col_width
+    return [
+      task.start_at.plus({ months }),
+      task.end_at.plus({ months })
+    ]
+  }
+
+  const calc_move_start = ({ task, index, delta }) => {
+    const months = delta[0] / col_width
+    const new_start_at = task.start_at.plus({ months })
+    return [
+      new_start_at,
+      task.end_at < new_start_at ? new_start_at : task.end_at
+    ]
+  }
+
+  const calc_move_end = ({ task, index, delta }) => {
+    const months = delta[0] / col_width
+    const new_end_at =  task.end_at.plus({ months })
+
+    return [
+      new_end_at < task.start_at ? new_end_at : task.start_at,
+      new_end_at
+    ]
+  }
+
   return {
     time_axis_size,
     time_window,
@@ -126,7 +153,10 @@ const month = ({ selectedIndex, time_dims, task_dims, get_data }) => {
     task_window,
     schedule_window,
     col_width,
-    row_height
+    row_height,
+    calc_move,
+    calc_move_start,
+    calc_move_end
   }
 }
 

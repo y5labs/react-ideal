@@ -9,6 +9,12 @@ import Schedule from './schedule'
 
 import * as timescales from './timescales'
 
+const timescale_byunit = {
+  '1m': timescales.month,
+  '1q': timescales.quarter,
+  '1y': timescales.year,
+}
+
 inject('pod', ({ StateContext, HubContext }) => {
   inject('route', [
     '/',
@@ -25,9 +31,7 @@ inject('pod', ({ StateContext, HubContext }) => {
         ]
         const task_dims = [0, data.length - 1]
 
-        const create = timescales.month
-
-        const fns = create({
+        const fns = timescale_byunit[scale]({
           selectedIndex,
           time_dims,
           task_dims,
@@ -104,23 +108,24 @@ inject('pod', ({ StateContext, HubContext }) => {
                   return dims
                 }}
                 onMove={({ task, index, delta }) => {
-                  const months = delta[0] / timescales.col_width
-                  data[index].start_at = task.start_at.plus({ months })
-                  data[index].end_at = task.end_at.plus({ months })
+                  [
+                    data[index].start_at,
+                    data[index].end_at
+                  ] = fns.calc_move({ task, index, delta })
                   setRenderCount(state => state + 1)
                 }}
                 onMoveStart={({ task, index, delta }) => {
-                  const months = delta[0] / timescales.col_width
-                  const d = data[index]
-                  d.start_at = task.start_at.plus({ months })
-                  if (d.end_at < d.start_at) d.end_at = d.start_at
+                  [
+                    data[index].start_at,
+                    data[index].end_at
+                  ] = fns.calc_move_start({ task, index, delta })
                   setRenderCount(state => state + 1)
                 }}
                 onMoveEnd={({ task, index, delta }) => {
-                  const months = delta[0] / timescales.col_width
-                  const d = data[index]
-                  d.end_at = task.end_at.plus({ months })
-                  if (d.end_at < d.start_at) d.start_at = d.end_at
+                  [
+                    data[index].start_at,
+                    data[index].end_at
+                  ] = fns.calc_move_end({ task, index, delta })
                   setRenderCount(state => state + 1)
                 }}
                 onTap={({ task, index }) => {

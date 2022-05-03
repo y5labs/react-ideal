@@ -65,7 +65,6 @@ const Schedule = props => {
               s.end + (isMovingEnd ? dragState?.delta?.[0] : 0)
           ]
           const dimWidth = dims[1] - dims[0]
-          if (isMovingStart) console.log(dims, dimWidth)
           const startPos = isSelected && !isMovingAny && (s.type == 'startandend' || s.type == 'start') ? s.start : null
           const endPos = isSelected && !isMovingAny && (s.type == 'startandend' || s.type == 'end') ? s.end : null
           const one = () =>
