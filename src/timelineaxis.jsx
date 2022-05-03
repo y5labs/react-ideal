@@ -16,14 +16,19 @@ const TimelimeAxis = props => {
     }
   })
 
-  const m = 100000
+  const m = 50000
 
   const shortMoney = m => {
     return new Intl.NumberFormat('en-NZ', {
-      maximumFractionDigits: 1,
+      maximumSignificantDigits: 3,
       notation: 'compact',
-      compactDisplay: 'short'
+      // compactDisplay: 'short'
     }).format(m)
+  }
+
+  const highlightMoney = m => {
+    const threshold = 100000
+    return Math.round(m / threshold) * threshold >= threshold ? 'red' : ''
   }
 
   useEffect(() => {
@@ -42,7 +47,7 @@ const TimelimeAxis = props => {
             }}
           >
             <span>{s}</span>
-            <span>{shortMoney(m)}</span>
+            <span className={highlightMoney(m)}>${shortMoney(m)}</span>
           </div>
         ))}
       </div>
