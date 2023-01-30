@@ -10,6 +10,8 @@ Define is used as an example to have a different API url between development and
 
 Dependencies have been kept to a minimum.
 
+Create a project on the Sentry server and copy DSN components to .env to setup Sentry error tracking.
+
 ## Future
 
 1. Explore concurrency beta features.
